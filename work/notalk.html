@@ -25,7 +25,7 @@
     }
 
     /* ── RAIL NAV ── */
-    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(20,10,60,0.62);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(125,109,255,0.25);font-family:'Pretendard',system-ui,sans-serif;}
+    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(99,84,222,0.86);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(255,255,255,0.16);font-family:'Pretendard',system-ui,sans-serif;}
     .pf-rail a,.pf-rail span{color:#fff;text-decoration:none;}
     .pf-rail__home{font-weight:800;letter-spacing:.1em;font-size:16px;display:inline-flex;gap:7px;align-items:center;flex-shrink:0;transition:gap .25s;}
     .pf-rail__home:hover{gap:11px;}
@@ -196,41 +196,122 @@
 
     /* ── MARKET RESEARCH ── */
     .mr {
-      background: var(--purple-light);
+      background: linear-gradient(180deg, #E9EAFD 0%, #FFFFFF 100%);
       padding: 100px var(--pad) 110px;
     }
-    .mr__header { margin-bottom: 60px; }
-    .mr__stat-row {
+    .mr__label {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--purple);
+      margin-bottom: 70px;
+    }
+    .mr__grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 64px;
+      column-gap: 32px;
+      row-gap: 28px;
+      align-items: stretch;
+      max-width: 1080px;
+      margin: 0 auto;
     }
-    .mr__stat {
-      border-radius: 20px;
+    .mr__card {
+      position: relative;
       background: #ffffff;
-      border: 1.5px solid rgba(125,109,255,0.15);
-      padding: 36px 28px;
+      border: 1.5px solid rgba(125,109,255,0.18);
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(26,16,53,0.05);
+      padding: 56px 28px 36px;
+      margin-top: 34px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-    .mr__stat-icon { font-size: 28px; margin-bottom: 8px; }
-    .mr__stat-label { font-size: 16px; font-weight: 700; letter-spacing: 0.18em; color: var(--purple); }
-    .mr__stat-num { font-family: 'Syne', sans-serif; font-size: clamp(32px, 3.5vw, 52px); font-weight: 800; color: var(--dark); line-height: 1; }
-    .mr__stat-sub { font-size: 16px; color: var(--muted); }
-    .mr__insight {
-      background: #ffffff;
-      border-radius: 20px;
-      border: 1.5px solid rgba(125,109,255,0.15);
-      padding: 40px 44px;
-      display: flex;
       align-items: center;
-      gap: 32px;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
     }
-    .mr__insight-icon { font-size: 36px; flex-shrink: 0; }
-    .mr__insight-text { font-size: clamp(18px, 1.7vw, 22px); font-weight: 700; color: var(--dark); line-height: 1.6; }
-    .mr__insight-text span { color: var(--purple); }
+    .mr__card::after {
+      content: '';
+      position: absolute;
+      bottom: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top: 11px solid var(--purple);
+    }
+    .mr__icon {
+      position: absolute;
+      top: -34px; left: 50%;
+      transform: translateX(-50%);
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6f7bf0 0%, #8c78f4 100%);
+      box-shadow: 0 8px 18px rgba(112,108,240,0.35);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mr__icon img { width: 34px; height: 34px; }
+    .mr__card-title { font-size: 20px; font-weight: 700; color: var(--dark); }
+    .mr__card-stat {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 38px; font-weight: 700;
+      color: var(--purple);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      display: flex; align-items: flex-end; justify-content: center; gap: 0;
+    }
+    .mr__stat-note {
+      flex: 0 0 0; min-width: 0; width: 0;
+      overflow: visible; white-space: nowrap;
+      margin-left: 6px;
+      font-family: 'Pretendard', sans-serif;
+      font-size: 11px; font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      padding-bottom: 7px;
+    }
+    .mr__card-sub { font-size: 15px; color: var(--muted); }
+    .mr__card-body { font-size: 16px; line-height: 1.8; color: var(--muted); }
+    .mr__summary {
+      text-align: center;
+      align-self: start;
+      font-size: 17px;
+      font-weight: 600;
+      color: #3a3550;
+    }
+    .mr__connector {
+      width: 0;
+      height: 56px;
+      margin: 36px auto 0;
+      border-left: 2px dotted rgba(125,109,255,0.55);
+      position: relative;
+    }
+    .mr__connector::after {
+      content: '';
+      position: absolute;
+      bottom: -5px; left: 50%;
+      transform: translateX(-50%);
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--purple);
+    }
+    .mr__callout {
+      margin: 28px auto 0;
+      max-width: 780px;
+      background: #ffffff;
+      border: 1.5px solid rgba(125,109,255,0.3);
+      border-radius: 16px;
+      padding: 24px 40px;
+      text-align: center;
+    }
+    .mr__callout p {
+      font-size: clamp(16px, 1.5vw, 19px);
+      font-weight: 600;
+      line-height: 1.6;
+      color: rgba(26,16,53,0.65);
+    }
+    .mr__callout span { color: var(--purple); font-weight: 800; }
 
     /* ── PROBLEM DEFINITION ── */
     .pd {
@@ -468,10 +549,10 @@
       .hero__phones { margin-top: 40px; }
       .hero__img { margin-bottom: -60px; }
       .hero__banner { grid-template-columns: 1fr; }
-      .card-grid-3, .mr__stat-row, .pd__cards, .as__screens { grid-template-columns: 1fr 1fr; }
+      .card-grid-3, .mr__grid, .pd__cards, .as__screens { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
-      .card-grid-3, .mr__stat-row, .pd__cards, .as__screens { grid-template-columns: 1fr; }
+      .card-grid-3, .mr__grid, .pd__cards, .as__screens { grid-template-columns: 1fr; }
       .ds__color-row { flex-wrap: wrap; }
     }
   </style>
@@ -524,34 +605,31 @@
 
   <!-- ────────── MARKET RESEARCH ────────── -->
   <section class="mr">
-    <div class="mr__header">
-      <span class="sec-label">MARKET RESEARCH</span>
-      <h2 class="sec-title">개인 중심 생활 확산,<br>새로운 연결의 필요성</h2>
-      <p class="sec-desc">1인 가구 증가와 관계 방식의 변화 속에서 기존 서비스는<br>부담 없이 참여할 수 있는 경험을 제공하지 못했습니다.</p>
+    <p class="mr__label">MARKET RESEARCH</p>
+    <div class="mr__grid">
+      <div class="mr__card">
+        <div class="mr__icon"><img src="../assets/images/notalk/user0.svg" alt=""></div>
+        <p class="mr__card-title">1인 가구 증가</p>
+        <p class="mr__card-stat">36.9%<span class="mr__stat-note">KOSIS</span></p>
+        <p class="mr__card-sub">2026년 기준 1인 가구 비율</p>
+      </div>
+      <div class="mr__card">
+        <div class="mr__icon"><img src="../assets/images/notalk/users0.svg" alt=""></div>
+        <p class="mr__card-title">관계 방식 변화</p>
+        <p class="mr__card-body">혼밥 · 혼영 · 개인여가 증가<br>관계를 필요한 만큼만 맺는 경향 확대</p>
+      </div>
+      <div class="mr__card">
+        <div class="mr__icon"><img src="../assets/images/notalk/basket0.svg" alt=""></div>
+        <p class="mr__card-title">소비 방식 변화</p>
+        <p class="mr__card-body">원데이클라스 · 팝업스토어 증가<br>구독보다 '필요할 때 참여' 소비 증가</p>
+      </div>
+      <p class="mr__summary">개인 중심 생활 확산</p>
+      <p class="mr__summary">선택적이고 부담 없는 연결 선호</p>
+      <p class="mr__summary">단기 · 팝업형 경험 증가</p>
     </div>
-    <div class="mr__stat-row">
-      <div class="mr__stat">
-        <span class="mr__stat-label">1인 가구 증가</span>
-        <p class="mr__stat-num">36.9%</p>
-        <p class="mr__stat-sub">2026년 기준 1인 가구 비율 (KOSIS)</p>
-        <p class="sec-desc" style="margin-top:12px; font-size:16px;">혼밥 · 혼영 · 개인여가 증가<br>관계를 필요한 만큼만 맺는 경향 확대</p>
-      </div>
-      <div class="mr__stat">
-        <span class="mr__stat-label">관계 방식 변화</span>
-        <p class="mr__stat-num" style="font-size:clamp(24px,2.5vw,36px); padding-top:8px;">개인 중심</p>
-        <p class="mr__stat-sub">선택적이고 부담 없는 연결 선호</p>
-        <p class="sec-desc" style="margin-top:12px; font-size:16px;">혼밥 · 혼영 · 개인여가 증가<br>관계를 필요한 만큼만 맺는 경향 확대</p>
-      </div>
-      <div class="mr__stat">
-        <span class="mr__stat-label">소비 방식 변화</span>
-        <p class="mr__stat-num" style="font-size:clamp(24px,2.5vw,36px); padding-top:8px;">팝업형</p>
-        <p class="mr__stat-sub">단기 · 팝업형 경험 증가</p>
-        <p class="sec-desc" style="margin-top:12px; font-size:16px;">원데이클라스 · 팝업스토어 증가<br>구독보다 '필요할 때 참여' 소비 증가</p>
-      </div>
-    </div>
-    <div class="mr__insight">
-      <div class="mr__insight-icon">💬</div>
-      <p class="mr__insight-text">기존 모임 서비스는 <span>'관계 형성'</span>에 집중하지만,<br>부담 없이 참여할 수 있는 경험은 부족했습니다.</p>
+    <div class="mr__connector"></div>
+    <div class="mr__callout">
+      <p>기존 모임 서비스는 '관계 형성'에 집중하지만, <span>부담 없이 참여</span>할 수 있는 경험은 부족했습니다.</p>
     </div>
   </section>
 
