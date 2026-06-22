@@ -107,10 +107,14 @@
     .c-ode{grid-area:ode}.c-ssang{grid-area:ssang}.c-sled{grid-area:sled}.c-notalk{grid-area:notalk}.c-badge{grid-area:badge}.c-about{grid-area:about}.c-resume{grid-area:resume}.c-contact{grid-area:contact}.c-stack{grid-area:stack}
     .bento > * { min-width: 0; }   /* 그리드 아이템이 컨테이너를 넘지 않게 */
 
-    .card { position: relative; overflow: hidden; border-radius: 18px; background: var(--card-bg); backdrop-filter: blur(15px) saturate(125%); -webkit-backdrop-filter: blur(15px) saturate(125%); border: 1px solid var(--card-border); padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; text-decoration: none; color: inherit; transition: transform .7s cubic-bezier(.16,1,.3,1), border-color .35s, box-shadow .35s, background .35s, opacity .55s ease; opacity: 0; transform: translateY(48px) scale(.92); }
+    .card { position: relative; overflow: hidden; border-radius: 18px; background: var(--card-bg); backdrop-filter: blur(15px) saturate(125%); -webkit-backdrop-filter: blur(15px) saturate(125%); border: 1px solid var(--card-border); padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; text-decoration: none; color: inherit; transition: transform .55s cubic-bezier(.16,1,.3,1), border-color .35s, box-shadow .35s, background .35s, opacity .45s ease; opacity: 0; transform: translateY(38px) scale(.94); }
     .bento.is-in .card { opacity: 1; transform: none; }
     /* 블랙에서 카드가 순차로 쏟아져 조립됨 (페이오프) */
-    .bento.is-in .card:nth-child(1){transition-delay:.04s}.bento.is-in .card:nth-child(2){transition-delay:.12s}.bento.is-in .card:nth-child(3){transition-delay:.20s}.bento.is-in .card:nth-child(4){transition-delay:.28s}.bento.is-in .card:nth-child(5){transition-delay:.36s}.bento.is-in .card:nth-child(6){transition-delay:.44s}.bento.is-in .card:nth-child(7){transition-delay:.52s}.bento.is-in .card:nth-child(8){transition-delay:.60s}.bento.is-in .card:nth-child(9){transition-delay:.68s}
+    /* 시각적 위→아래(행 순서) 스태거 — DOM순서❌ */
+    .bento.is-in .c-about, .bento.is-in .c-resume, .bento.is-in .c-badge { transition-delay: .03s; }
+    .bento.is-in .c-contact, .bento.is-in .c-stack { transition-delay: .11s; }
+    .bento.is-in .c-ode, .bento.is-in .c-ssang, .bento.is-in .c-sled { transition-delay: .19s; }
+    .bento.is-in .c-notalk { transition-delay: .27s; }
 
     .card[data-mood]:hover { border-color: var(--mood); box-shadow: 0 0 0 1px var(--mood), 0 18px 50px -12px var(--mood); background: color-mix(in srgb, var(--mood) 18%, var(--card-bg)); }
     .card[href]:hover { transform: translateY(-3px); }
@@ -492,9 +496,11 @@
           }
         }
         function finish(){
-          cine.classList.add('bloom'); cine.classList.add('toblack');
-          // 블랙이 차오른 뒤 오버레이 걷힘 + 그 위로 허브가 조립되며 등장
-          T(function(){ revealHub(); cine.classList.add('out'); document.body.style.overflow=''; busy=false; }, 950);
+          cine.classList.add('bloom'); cine.classList.add('toblack');   // 검정 원형이 차오름(1.2s)
+          // 1) 검정으로 완전히 덮인 뒤 → 허브가 검정 뒤에서 조립 시작
+          T(function(){ revealHub(); }, 1200);
+          // 2) 잠깐 뒤 → 검정 오버레이 걷힘 → 조립되는 허브가 드러남 (겹침 제거)
+          T(function(){ cine.classList.add('out'); document.body.style.overflow=''; busy=false; }, 1420);
         }
         T(step, 250);
       }

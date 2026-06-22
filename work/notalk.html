@@ -25,15 +25,15 @@
     }
 
     /* ── RAIL NAV ── */
-    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(99,84,222,0.86);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(255,255,255,0.16);font-family:'Pretendard',system-ui,sans-serif;}
-    .pf-rail a,.pf-rail span{color:#fff;text-decoration:none;}
+    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(255,255,255,0.82);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(26,16,53,0.08);font-family:'Pretendard',system-ui,sans-serif;}
+    .pf-rail a,.pf-rail span{color:var(--dark);text-decoration:none;}
     .pf-rail__home{font-weight:800;letter-spacing:.1em;font-size:16px;display:inline-flex;gap:7px;align-items:center;flex-shrink:0;transition:gap .25s;}
     .pf-rail__home:hover{gap:11px;}
     .pf-rail__tabs{display:flex;gap:4px;margin:0 auto;overflow-x:auto;scrollbar-width:none;}
     .pf-rail__tabs::-webkit-scrollbar{display:none;}
     .pf-rail__tab{white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;padding:7px 13px;border-radius:999px;opacity:.55;transition:opacity .25s,background .25s;}
     .pf-rail__tab:hover{opacity:1;}
-    .pf-rail__tab--active{opacity:1;background:rgba(255,255,255,.16);}
+    .pf-rail__tab--active{opacity:1;background:rgba(125,109,255,.14);color:var(--purple);}
     .pf-rail__tab--soon{opacity:.3;pointer-events:none;}
     .pf-rail__live{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.04em;padding:9px 16px;border-radius:999px;background:#7d6dff;color:#fff!important;transition:transform .2s;}
     .pf-rail__live:hover{transform:translateY(-2px);}
@@ -318,43 +318,45 @@
       background: #ffffff;
       padding: 100px var(--pad) 110px;
     }
-    .pd__header { max-width: 680px; margin-bottom: 64px; }
+    .pd__header { max-width: 760px; margin: 0 auto 56px; text-align: center; }   /* 가운데 정렬 */
     .pd__cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
     .pd__card {
       border-radius: 20px;
-      border: 1.5px solid rgba(125,109,255,0.15);
-      padding: 36px 28px 36px;
+      border: 1.5px solid rgba(125,109,255,0.18);
+      padding: 32px 28px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
       background: #ffffff;
       box-shadow: 0 4px 20px rgba(26,16,53,0.05);
     }
-    .pd__card-bar {
-      width: 40px; height: 4px;
-      border-radius: 2px;
-      background: var(--purple);
-      margin-bottom: 4px;
-    }
-    .pd__card-bar--mint { background: var(--mint); }
-    .pd__card-bar--mixed { background: linear-gradient(90deg, var(--purple), var(--mint)); }
     .pd__card-title { font-size: 20px; font-weight: 800; color: var(--dark); }
-    .pd__card-sub { font-size: 18px; font-weight: 700; color: var(--dark); line-height: 1.35; }
-    .pd__card-list { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
-    .pd__card-item {
-      font-size: 16px;
-      line-height: 1.7;
-      color: var(--muted);
-      padding-left: 14px;
-      position: relative;
+    .pd__card-head { display: flex; align-items: center; gap: 16px; }
+    .pd__card-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(125,109,255,0.10);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .pd__card-item::before {
-      content: '·';
-      position: absolute;
-      left: 0;
-      color: var(--purple);
-      font-weight: 700;
+    .pd__card-icon img { width: 28px; height: 28px; object-fit: contain; }
+    .pd__card-sub { font-size: 17px; font-weight: 700; color: var(--dark); line-height: 1.4; }
+    .pd__card-divider { height: 1px; background: rgba(26,16,53,0.08); }
+    .pd__card-list { display: flex; flex-direction: column; gap: 8px; }
+    .pd__card-item { font-size: 16px; line-height: 1.7; color: var(--muted); padding-left: 14px; position: relative; }
+    .pd__card-item::before { content: '·'; position: absolute; left: 0; color: var(--purple); font-weight: 700; }
+    /* card3 민트 액센트 */
+    .pd__card--mint { border-color: rgba(131,216,191,0.5); }
+    .pd__card--mint .pd__card-icon { background: rgba(131,216,191,0.18); }
+    .pd__card--mint .pd__card-title { color: #2a9d82; }
+    .pd__card--mint .pd__card-item::before { color: var(--mint); }
+    /* 연결선 + 요약 배너 (가운데) */
+    .pd__connector { width: 1px; height: 46px; background: rgba(125,109,255,0.3); margin: 44px auto 0; }
+    .pd__summary {
+      margin: 0 auto; max-width: 1100px;
+      border: 1.5px solid rgba(131,216,191,0.6); border-radius: 18px;
+      padding: 30px 40px; text-align: center; background: rgba(131,216,191,0.06);
     }
+    .pd__summary p { font-size: clamp(17px, 2vw, 23px); font-weight: 800; line-height: 1.5; color: #2a9d82; letter-spacing: -0.01em; }
+    @media (max-width: 860px) { .pd__cards { grid-template-columns: 1fr; } }
 
     /* ── DESIGN SYSTEM ── */
     .ds {
@@ -629,7 +631,7 @@
     </div>
     <div class="mr__connector"></div>
     <div class="mr__callout">
-      <p>기존 모임 서비스는 '관계 형성'에 집중하지만, <span>부담 없이 참여</span>할 수 있는 경험은 부족했습니다.</p>
+      <p>기존 모임 서비스는 '관계 형성'에 집중하지만, <span>부담 없이 참여할 수 있는 경험</span>은 부족했습니다.</p>
     </div>
   </section>
 
@@ -641,9 +643,12 @@
     </div>
     <div class="pd__cards">
       <div class="pd__card">
-        <div class="pd__card-bar"></div>
         <p class="pd__card-title">기존 서비스의 한계</p>
-        <p class="pd__card-sub">관계 없이 함께 하는<br>경험은 제공하기 어렵다</p>
+        <div class="pd__card-head">
+          <div class="pd__card-icon"><img src="../assets/images/notalk/user-sound0.svg" alt=""></div>
+          <p class="pd__card-sub">관계 없이 함께 하는<br>경험은 제공하기 어렵다</p>
+        </div>
+        <div class="pd__card-divider"></div>
         <div class="pd__card-list">
           <p class="pd__card-item">모임앱은 자기소개 · 대화 · 친목을 전제로 함</p>
           <p class="pd__card-item">커뮤니티는 지속적 소통과 관계 유지가 필요</p>
@@ -651,26 +656,34 @@
         </div>
       </div>
       <div class="pd__card">
-        <div class="pd__card-bar pd__card-bar--mint"></div>
         <p class="pd__card-title">사용자 니즈</p>
-        <p class="pd__card-sub">함께하고 싶지만<br>관계는 부담스럽다</p>
+        <div class="pd__card-head">
+          <div class="pd__card-icon"><img src="../assets/images/notalk/clock-user0.svg" alt=""></div>
+          <p class="pd__card-sub">함께하고 싶지만<br>관계는 부담스럽다</p>
+        </div>
+        <div class="pd__card-divider"></div>
         <div class="pd__card-list">
           <p class="pd__card-item">혼자서는 지속이 어렵고 깊은 관계는 피로함</p>
           <p class="pd__card-item">모임 참여 전후 대화의 부담이 큼</p>
           <p class="pd__card-item">낯선 사람과의 만남에서 안전·신뢰가 중요</p>
         </div>
       </div>
-      <div class="pd__card">
-        <div class="pd__card-bar pd__card-bar--mixed"></div>
+      <div class="pd__card pd__card--mint">
         <p class="pd__card-title">연결 방식의 전환</p>
-        <p class="pd__card-sub">같은 시간을 공유하되<br>대화는 선택이 되어야 한다</p>
+        <div class="pd__card-head">
+          <div class="pd__card-icon"><img src="../assets/images/notalk/chat-circle-slash0.svg" alt=""></div>
+          <p class="pd__card-sub">같은 시간을 공유하되<br>대화는 선택이 되어야 한다</p>
+        </div>
+        <div class="pd__card-divider"></div>
         <div class="pd__card-list">
           <p class="pd__card-item">침묵 매너 기반의 안전한 참여 구조</p>
           <p class="pd__card-item">시간, 장소, 카테고리 중심의 팝업 모임</p>
-          <p class="pd__card-item">짧은 채팅과 상태 공유로 최소한의 소통</p>
+          <p class="pd__card-item">짧은 채팅과 상태 공유로 최소한의 소통만 제공</p>
         </div>
       </div>
     </div>
+    <div class="pd__connector"></div>
+    <div class="pd__summary"><p>NOTALK은 말보다 경험에 집중하는 구조를 통해 조용하지만 지속 가능한 연결을 만듭니다.</p></div>
   </section>
 
   <!-- ────────── DESIGN SYSTEM ────────── -->
