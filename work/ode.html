@@ -334,6 +334,7 @@
       <a class="pf-rail__tab" href="sledding.html">Sledding</a>
       <a class="pf-rail__tab" href="notalk.html">노톡</a>
     </div>
+    <a class="pf-rail__live" href="https://itsmauvy.github.io/ODE/" target="_blank"><span>LIVE SITE</span></a>
   </nav>
 
   <!-- 히어로: 영상 풀블리드 -->
@@ -1772,17 +1773,25 @@
         <p class="rf__card-desc">ODE를 제품이 아닌,<br>일상 속 브랜드 경험으로 발전시키고 싶습니다.</p>
       </div>
     </div>
-    <div class="rf__cta">
-      <a class="rf__nav-link rf__nav-link--prev" href="../index.html#work">
-        <span class="rf__nav-dir">← PROJECT LIST</span>
-        <span class="rf__nav-title">Selected Work</span>
-      </a>
-      <a class="rf__nav-link rf__nav-link--next" href="sledding.html">
-        <span class="rf__nav-dir">NEXT PROJECT →</span>
-        <span class="rf__nav-title">Sledding Game</span>
-      </a>
-    </div>
   </section>
+
+  <style>
+    .next-nav{background:#1a1035;padding:72px max(80px,(100% - 1440px)/2);display:flex;justify-content:space-between;align-items:center;}
+    .next-nav a{text-decoration:none;color:rgba(255,255,255,0.45);display:flex;flex-direction:column;gap:8px;transition:color .2s;}
+    .next-nav a:hover{color:#fff;}
+    .next-nav__dir{font-size:13px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,0.3);}
+    .next-nav__title{font-family:'Syne',sans-serif;font-size:clamp(24px,2.6vw,38px);font-weight:800;color:inherit;line-height:1;}
+  </style>
+  <nav class="next-nav">
+    <a href="../index.html#work">
+      <span class="next-nav__dir">← PROJECT LIST</span>
+      <span class="next-nav__title">Selected Work</span>
+    </a>
+    <a href="sledding.html" style="align-items:flex-end;">
+      <span class="next-nav__dir">NEXT →</span>
+      <span class="next-nav__title">Sledding</span>
+    </a>
+  </nav>
 
   <style>
     .po {
