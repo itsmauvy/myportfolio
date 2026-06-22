@@ -1,0 +1,14 @@
+/* theme: ode — 뷰티 브랜딩 / 프리미엄·에디토리얼
+   팔레트: 아이보리·베이지 + 딥 다크 / 헤드라인: 세리프 포인트 */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Gowun+Batang:wght@400;700&display=swap");
+
+:root {
+  --bg:     #f5f1eb;   /* Soft Ivory — 메인 배경 */
+  --surface:#e8e0d8;   /* Warm Beige — 서브 배경 */
+  --fg:     #2a2118;   /* Deep Taupe 계열 텍스트 */
+  --muted:  rgba(42, 33, 24, 0.62);
+  --line:   rgba(42, 33, 24, 0.16);
+  --accent: #8d775f;   /* Mocha Beige — 시그니처 */
+
+  --font-head: "Gowun Batang", "Cormorant Garamond", serif;
+}

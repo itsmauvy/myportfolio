@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="ko" style="background:#0d1117">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>Sledding Game — SOOBIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #0d1117; color: #e8f0f8; font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
+
+    /* ── HEADER ── */
+    .detail-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+      mix-blend-mode: normal;
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: opacity 0.2s, gap 0.25s;
+    }
+    .back-btn:hover { opacity: 0.5; gap: 14px; }
+    .back-btn svg { flex-shrink: 0; transition: transform 0.25s; }
+    .back-btn:hover svg { transform: translateX(-3px); }
+    .detail-nav { display: flex; gap: 40px; }
+    .detail-nav a {
+      display: inline-block;
+      overflow: hidden;
+      height: 1.4em;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+    .detail-nav a:hover { opacity: 1; }
+    .nav-link-inner { position: relative; display: inline-block; }
+    .nav-link-inner span { display: block; line-height: 1.4em; transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .nav-link-inner span:first-child { position: relative; transform: translateY(0%); }
+    .nav-link-inner span:last-child { position: absolute; left: 0; top: 0; width: 100%; transform: translateY(100%); }
+    .detail-nav a:hover .nav-link-inner span:first-child { transform: translateY(-100%); }
+    .detail-nav a:hover .nav-link-inner span:last-child  { transform: translateY(0%); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .hero video, .hero > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transform: scale(1.04);
+      transition: opacity 0.8s ease, transform 1.6s cubic-bezier(0.22,1,0.36,1);
+    }
+    .hero video.ready {
+      opacity: 1;
+      transform: scale(1);
+    }
+    .hero-text {
+      position: absolute;
+      bottom: 52px;
+      left: 52px;
+      z-index: 2;
+      font-family: 'Syne', sans-serif;   /* 영상 overlay 텍스트 전용 */
+    }
+    .detail-category {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: #fff;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .detail-title {
+      font-size: clamp(38px, 5.5vw, 72px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      color: #fff;
+      overflow: hidden;
+      padding-bottom: 0.08em;
+    }
+    .detail-tagline {
+      font-size: 16px;
+      font-weight: 400;
+      color: #fff;
+      overflow: hidden;
+      padding-bottom: 0.12em;
+    }
+    .hero-text .hr-in { display: block; will-change: transform; }
+
+    /* ── SNOW CANVAS ── */
+    #snow-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0.6;
+    }
+
+    /* ── WAVE DIVIDER ── */
+    .wave { display: block; width: 100%; line-height: 0; }
+    .wave svg { display: block; width: 100%; }
+
+    /* ── PROJECT OVERVIEW ── */
+    .po {
+      position: relative;
+    }
+    .po__bg {
+      position: absolute;
+      inset: -80px 0 0;
+      z-index: 0;
+    }
+    .po__bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .po__bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(214,238,248,0.65);
+    }
+    .po__inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;          /* 이미지와 세로 가운데 정렬 (ode 커버와 통일) */
+      min-height: 88vh;
+      padding: 120px max(80px, (100% - 1440px) / 2) 120px;
+    }
+    .po__left {
+      display: flex;
+      flex-direction: column;
+    }
+    .po__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: #3a78b4;
+      margin-bottom: 32px;
+    }
+    .po__question {
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(34px, 4vw, 64px);
+      font-weight: 700;
+      line-height: 1.55;
+      color: #0d2d4a;
+      margin-bottom: 44px;
+    }
+    .po__desc {
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(17px, 1.4vw, 21px);
+      line-height: 2;
+      color: rgba(13,45,74,0.65);
+    }
+    .po__right {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin-top: 48px;
+    }
+    .po__meta-row-group {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .po__meta-group { display: flex; flex-direction: column; gap: 12px; }
+    .po__meta-label { font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: #3a78b4; }
+    .po__meta-val { font-size: 16px; color: #1a3a5c; font-family: 'Pretendard', sans-serif; line-height: 1.7; }
+    .po__tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .po__tag {
+      font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
+      color: #1a6da8; border: 1.5px solid rgba(26,109,168,0.35);
+      border-radius: 20px; padding: 5px 14px;
+      background: rgba(255,255,255,0.5);
+    }
+
+    /* ── VIDEO SHOWCASE ── */
+    .vs { background: #bde0f5; padding: 80px max(80px, (100% - 1440px) / 2) 40px; }
+    .vs__label { font-size: 16px; font-weight: 700; letter-spacing: 0.22em; color: #1a6da8; margin-bottom: 48px; display: block; }
+    .vs__main { width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 8px 40px rgba(13,45,74,0.15); }
+    .vs__main video { width: 100%; display: block; }
+    .vs__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .vs__item { border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.4); cursor: pointer; box-shadow: 0 4px 16px rgba(13,45,74,0.1); }
+    .vs__item video { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; }
+    .vs__item-label { font-size: 16px; font-weight: 700; letter-spacing: 0.14em; color: #1a6da8; padding: 10px 14px; }
+
+    /* ── REFLECTION ── */
+    .rf { background: #e8f5fc; padding: 100px max(80px, (100% - 1440px) / 2) 110px; }
+    .rf__label { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: #3a78b4; margin-bottom: 28px; }
+    .rf__title { font-family: 'Pretendard', sans-serif; font-size: clamp(32px, 3.4vw, 52px); font-weight: 700; color: #0d2d4a; margin-bottom: 76px; }
+    .rf__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 110px; }
+    .rf__card { border-top: 2px solid rgba(26,109,168,0.2); padding-top: 26px; }
+    .rf__card-en { font-family: 'Pretendard', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #3a78b4; }
+    .rf__card-ko { font-family: 'Pretendard', sans-serif; font-size: 21px; font-weight: 700; color: #0d2d4a; margin: 12px 0 16px; }
+    .rf__card-desc { font-size: 16px; line-height: 1.95; color: rgba(13,45,74,0.6); font-family: 'Pretendard', sans-serif; }
+    .rf__cta { border-top: 1px solid rgba(26,109,168,0.15); padding-top: 72px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .rf__nav-link { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #0d2d4a; transition: opacity 0.2s; }
+    .rf__nav-link:hover { opacity: 0.5; }
+    .rf__nav-link--next { align-items: flex-end; }
+    .rf__nav-dir { font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: #3a78b4; }
+    .rf__nav-title { font-family: 'Pretendard', sans-serif; font-size: clamp(24px, 2.6vw, 38px); color: #0d2d4a; line-height: 1; }
+
+    /* ── PROJ NAV ── */
+    .proj-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.5);
+      padding: 20px 16px;
+      opacity: 1;
+      transition: transform 0.3s, color 0.4s;
+    }
+    .proj-nav--prev { left: 24px; }
+    .proj-nav--next { right: 24px; }
+    .proj-nav span {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      font-family: 'Pretendard', sans-serif;
+      writing-mode: vertical-rl;
+    }
+    .proj-nav--prev span { transform: rotate(180deg); }
+    .proj-nav svg { opacity: 0.7; }
+    .proj-nav:hover { color: #fff; }
+    .proj-nav:hover svg { opacity: 1; }
+    .proj-nav--disabled { opacity: 0 !important; pointer-events: none; }
+    .proj-nav--prev:hover { transform: translateY(-50%) translateX(-3px); }
+    .proj-nav--next:hover { transform: translateY(-50%) translateX(3px); }
+
+    /* ── SCROLL TOP ── */
+    #scroll-top {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(26,109,168,0.3);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(10px);
+      color: #1a6da8;
+      cursor: pointer;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s, background 0.2s;
+    }
+    #scroll-top.visible { opacity: 1; transform: translateY(0); }
+    #scroll-top:hover { background: #1a6da8; color: #fff; }
+  </style>
+</head>
+<body id="top">
+  <script>
+    (function() {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:#0d1117;z-index:99999;pointer-events:none;opacity:1;';
+      document.body.appendChild(overlay);
+
+      function runHeroTimeline() {
+        const heroVideo = document.querySelector('.hero video');
+        heroVideo && heroVideo.classList.add('ready');
+
+        gsap.to(overlay, { opacity: 0, duration: 0.6, ease: 'power2.out' });
+
+        const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+        tl.from('.detail-category .hr-in', { yPercent: 120, duration: 0.7 }, 0.15);
+        tl.from('.detail-title .hr-in', { yPercent: 115, duration: 1.0 }, 0.3);
+        tl.from('.detail-tagline .hr-in', { yPercent: 120, duration: 0.7 }, 0.6);
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const heroVideo = document.querySelector('.hero video');
+        if (!heroVideo) { runHeroTimeline(); return; }
+        const timeout = setTimeout(runHeroTimeline, 1200);
+        function onFirstFrame() {
+          clearTimeout(timeout);
+          requestAnimationFrame(() => requestAnimationFrame(runHeroTimeline));
+        }
+        if (heroVideo.requestVideoFrameCallback) {
+          heroVideo.requestVideoFrameCallback(onFirstFrame);
+        } else {
+          heroVideo.addEventListener('canplay', () => {
+            requestAnimationFrame(() => requestAnimationFrame(onFirstFrame));
+          }, { once: true });
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#')) return;
+        e.preventDefault();
+        gsap.to(overlay, { opacity: 1, duration: 0.4, ease: 'power2.in',
+          onComplete: () => { window.location.href = href; }
+        });
+      });
+    })();
+  </script>
+
+  <!-- HEADER -->
+  <!-- 고정 프로젝트 레일 (모든 케이스 공통 · 자체 스타일) -->
+  <style>
+    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(13,17,23,0.55);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(255,255,255,0.12);font-family:'Pretendard',system-ui,sans-serif;}
+    .pf-rail a,.pf-rail span{color:#fff;text-decoration:none;}
+    .pf-rail__home{font-weight:800;letter-spacing:.1em;font-size:15px;display:inline-flex;gap:7px;align-items:center;flex-shrink:0;transition:gap .25s;}
+    .pf-rail__home:hover{gap:11px;}
+    .pf-rail__tabs{display:flex;gap:4px;margin:0 auto;overflow-x:auto;scrollbar-width:none;}
+    .pf-rail__tabs::-webkit-scrollbar{display:none;}
+    .pf-rail__tab{white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;padding:7px 13px;border-radius:999px;opacity:.55;transition:opacity .25s,background .25s;}
+    .pf-rail__tab:hover{opacity:1;}
+    .pf-rail__tab--active{opacity:1;background:rgba(255,255,255,.16);}
+    .pf-rail__tab--soon{opacity:.3;pointer-events:none;}
+    .pf-rail__live{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.04em;padding:9px 16px;border-radius:999px;background:#ff8a4c;color:#fff!important;transition:transform .2s;}
+    .pf-rail__live:hover{transform:translateY(-2px);}
+    .pf-rail__live::before{content:'▶';font-size:.7em;}
+    .pf-rail__live span{color:inherit;}   /* 버튼 글자색이 버튼색을 따르게 */
+    @media(max-width:720px){.pf-rail__live span{display:none;}.pf-rail__live{padding:9px 12px;}}
+  </style>
+  <nav class="pf-rail">
+    <a class="pf-rail__home" href="../index.html">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      BACK
+    </a>
+    <div class="pf-rail__tabs">
+      <a class="pf-rail__tab" href="ode.html">ODE</a>
+      <span class="pf-rail__tab pf-rail__tab--soon">상상의문</span>
+      <a class="pf-rail__tab pf-rail__tab--active" href="sledding.html">Sledding</a>
+      <a class="pf-rail__tab" href="notalk.html">노톡</a>
+    </div>
+  </nav>
+
+  <!-- SNOW -->
+  <canvas id="snow-canvas"></canvas>
+
+  <!-- HERO -->
+  <div class="hero">
+    <img src="../assets/images/sledding/sledding-thumb.jpg" alt="Sledding Game" style="opacity:1;transform:none;">
+    <div class="hero-text">
+      <p class="detail-category"><span class="hr-in">UX/UI DESIGN · CONCEPT DESIGN</span></p>
+      <h1 class="detail-title"><span class="hr-in">Sledding<br>Game</span></h1>
+      <p class="detail-tagline"><span class="hr-in">Steam 인디 게임 · 웹사이트 기획 및 제작</span></p>
+    </div>
+  </div>
+
+  <!-- clipPath for wave top of PROJECT OVERVIEW -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden;">
+    <defs>
+      <clipPath id="poWaveClip" clipPathUnits="userSpaceOnUse">
+        <path id="po-wave-path" d=""/>
+      </clipPath>
+    </defs>
+  </svg>
+
+  <!-- PROJECT OVERVIEW -->
+  <section class="po" style="margin-top:-80px; clip-path:url(#poWaveClip);">
+    <div class="po__bg" aria-hidden="true">
+      <img src="../assets/images/sledding/sledding-thumb.jpg" alt="">
+    </div>
+    <div class="po__inner">
+    <div class="po__left">
+      <span class="po__label">PROJECT OVERVIEW</span>
+      <h2 class="po__question">게임의 즐거움을<br>웹으로 확장하다</h2>
+      <p class="po__desc">
+        실제 Steam 출시 인디 게임 Sledding Game의<br>
+        공식 웹사이트를 직접 기획하고 제작했습니다.<br><br>
+        게임 특유의 겨울 감성과 유머 코드를<br>
+        웹 인터랙션으로 번역하는 것이 핵심 과제였습니다.
+      </p>
+    </div>
+    <div class="po__right">
+      <div class="po__meta-row-group">
+        <div class="po__meta-group">
+          <span class="po__meta-label">PERIOD</span>
+          <span class="po__meta-val">2 Weeks</span>
+        </div>
+        <div class="po__meta-group">
+          <span class="po__meta-label">TOOLS</span>
+          <span class="po__meta-val">Figma · Photoshop · CapCut · AI</span>
+        </div>
+      </div>
+      <div class="po__meta-group">
+        <span class="po__meta-label">SCOPE OF WORK</span>
+        <div class="po__tags">
+          <span class="po__tag">Web Publishing</span>
+          <span class="po__tag">Interaction Design</span>
+          <span class="po__tag">Responsive</span>
+          <span class="po__tag">Localization (KO/EN)</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- BACKGROUND + PROJECT GOALS -->
+  <style>
+    .pg {
+      background: linear-gradient(180deg, #dff1fb 0%, #c2e5f7 40%, #a8d8f0 70%, #c8e9f5 85%, #e8f5fc 100%);
+      padding: 100px max(80px, (100% - 1440px) / 2) 110px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 겨울 장식 눈송이 */
+    .pg__deco {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+    }
+    .pg__deco--tl { top: 40px; left: -40px; opacity: 0.3; transform: rotate(-15deg); }
+    .pg__deco--tr { top: 30px; right: -30px; opacity: 0.25; transform: rotate(20deg); }
+    .pg__deco--bl { bottom: 60px; left: -30px; opacity: 0.2; transform: rotate(10deg); }
+    .pg__deco--br { bottom: 40px; right: -40px; opacity: 0.35; transform: rotate(-25deg); }
+    .pg__deco--mid { top: 45%; left: 50%; opacity: 0.06; transform: translate(-50%,-50%) rotate(45deg); }
+
+    /* 카드 glassmorphism */
+    .pg__card {
+      position: relative;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(255,255,255,0.7);
+      box-shadow:
+        0 4px 24px rgba(13,45,74,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        inset 0 -1px 0 rgba(255,255,255,0.2);
+      padding: 28px 28px 0;
+      overflow: hidden;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 섹션 공통 블록 */
+    .pg__block { margin-bottom: 80px; }
+    .pg__block:last-child { margin-bottom: 0; }
+
+    /* 넘버링 헤더 */
+    .pg__section-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; }
+    .pg__section-num { display: none; }
+    .pg__section-label { font-size: 16px; font-weight: 700; letter-spacing: 0.22em; color: #1a6da8; }
+
+    /* BACKGROUND 중앙정렬 */
+    .pg__bg-wrap {
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .pg__bg-label { font-size: 16px; font-weight: 700; letter-spacing: 0.22em; color: #1a6da8; margin-bottom: 24px; display: block; }
+    .pg__bg-title { font-family: 'Pretendard', sans-serif; font-size: clamp(28px, 2.8vw, 44px); font-weight: 800; color: #0d2d4a; margin-bottom: 28px; line-height: 1.3; letter-spacing: -0.02em; }
+    .pg__bg-desc { font-family: 'Pretendard', sans-serif; font-size: 16px; line-height: 2; color: rgba(13,45,74,0.6); }
+    .pg__bg-right { position: relative; }
+    .pg__bg-img-wrap {
+      border-radius: 20px;
+      overflow: hidden;
+      border: 2.5px solid rgba(255,255,255,0.85);
+      box-shadow: 0 12px 40px rgba(13,45,74,0.12);
+      aspect-ratio: 16/10;
+    }
+    .pg__bg-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pg__bg-badge {
+      position: absolute;
+      bottom: -16px;
+      left: -16px;
+      background: #0d2d4a;
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(13,45,74,0.25);
+    }
+    .pg__bg-badge img { width: 32px; height: 32px; object-fit: contain; }
+    .pg__bg-badge span { font-size: 16px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.4; }
+
+    /* GOALS 카드 그리드 */
+    .pg__goals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .pg__card {
+      position: relative;
+      border-radius: 20px;
+      background: #fff;
+      border: 1.5px solid #e4eef6;
+      box-shadow: 0 6px 24px rgba(13,45,74,0.06);
+      padding: 28px 28px 0;
+      overflow: hidden;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .pg__card-num {
+      position: absolute;
+      bottom: -24px;
+      right: 8px;
+      font-family: 'Pretendard', sans-serif;
+      font-size: 180px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      background: linear-gradient(180deg, rgba(26,109,168,0.16) 0%, transparent 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      pointer-events: none;
+      user-select: none;
+    }
+    .pg__card-en { font-family: 'Pretendard', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.12em; color: #3a78b4; margin-bottom: 6px; }
+    .pg__card-ko { font-family: 'Pretendard', sans-serif; font-size: 22px; font-weight: 700; color: #0d2d4a; margin-bottom: 20px; }
+    .pg__card-desc { font-size: 16px; line-height: 1.9; color: rgba(13,45,74,0.55); font-family: 'Pretendard', sans-serif; text-align: left; padding-bottom: 140px; }
+
+    /* PROJECT GOALS 아래 결론 — 연결선 + 문구 */
+    .pg__conclusion { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 56px; }
+    .pg__conclu-arrow { width: 1.5px; height: 64px; background: linear-gradient(180deg, rgba(26,109,168,0) 0%, rgba(26,109,168,0.9) 100%); position: relative; margin-bottom: 44px; }
+    .pg__conclu-arrow::after { content: ''; position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); width: 9px; height: 9px; border-radius: 50%; background: #1a6da8; }
+    .pg__conclu-text { font-family: 'Pretendard', sans-serif; font-size: clamp(18px, 1.7vw, 23px); font-weight: 500; line-height: 1.7; color: #2a5a85; }
+    .pg__conclu-text strong { font-weight: 800; color: #0d2d4a; }
+  </style>
+
+  <section class="pg">
+    <!-- 겨울 장식 눈송이 PNG -->
+    <img class="pg__deco pg__deco--tl" src="../assets/images/sledding/snowflake.png" alt="" width="180">
+    <img class="pg__deco pg__deco--tr" src="../assets/images/sledding/snowflake.png" alt="" width="120">
+    <img class="pg__deco pg__deco--bl" src="../assets/images/sledding/snowflake.png" alt="" width="100">
+    <img class="pg__deco pg__deco--br" src="../assets/images/sledding/snowflake.png" alt="" width="220">
+
+    <!-- 01 BACKGROUND -->
+    <div class="pg__block">
+      <div class="pg__bg-wrap">
+        <span class="pg__bg-label">BACKGROUND</span>
+        <h2 class="pg__bg-title">Why Sledding Game?</h2>
+        <p class="pg__bg-desc">
+          출시 5일 만에 100,000장 판매를 달성한 Steam 인디 게임의 매력을<br>
+          웹에서도 자연스럽게 경험할 수 있도록 랜딩 페이지를<br>
+          기획하고 제작했습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 02 PROJECT GOALS -->
+    <div class="pg__block">
+      <div class="pg__section-header">
+        <span class="pg__section-num">02</span>
+        <span class="pg__section-label">PROJECT GOALS</span>
+      </div>
+      <div class="pg__goals-grid">
+        <div class="pg__card">
+          <p class="pg__card-num">01</p>
+          <span class="pg__card-en">World-Building</span>
+          <p class="pg__card-ko">게임의 첫인상 전달</p>
+          <p class="pg__card-desc">게임의 분위기와 핵심 콘텐츠를 직관적으로 전달하여<br>플레이 전 기대감을 높이는 랜딩 경험을 설계합니다.</p>
+        </div>
+        <div class="pg__card">
+          <p class="pg__card-num">02</p>
+          <span class="pg__card-en">Steam Conversion</span>
+          <p class="pg__card-ko">플레이 유도</p>
+          <p class="pg__card-desc">게임의 특징과 콘텐츠를 자연스럽게 소개하여<br>Steam 페이지까지 이어지는 사용자 흐름을 설계합니다.</p>
+        </div>
+        <div class="pg__card">
+          <p class="pg__card-num">03</p>
+          <span class="pg__card-en">Interactive Experience</span>
+          <p class="pg__card-ko">인터랙티브 경험</p>
+          <p class="pg__card-desc">GSAP 애니메이션과 반응형 인터랙션을 활용해<br>게임의 즐거움을 웹에서도 자연스럽게 전달합니다.</p>
+        </div>
+      </div>
+
+      <div class="pg__conclusion">
+        <div class="pg__conclu-arrow"></div>
+        <p class="pg__conclu-text"><strong>게임의 분위기를 웹으로 연결</strong>하는 것이<br>이번 프로젝트의 핵심 목표였습니다.</p>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- COLOR SYSTEM -->
+  <style>
+    .cs {
+      background: linear-gradient(180deg, #e8f5fc 0%, #f4fafd 50%, #f8fdff 100%);
+      padding: 100px max(80px, (100% - 1440px) / 2);
+    }
+    .cs__label {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      color: #1a6da8;
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .cs__sub-label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: #3a78b4;
+    }
+    /* COLOR — 상단 중앙 */
+    .cs__color-block { text-align: center; margin-bottom: 76px; }
+    .cs__color-block .cs__sub-label { display: block; margin-bottom: 44px; }
+    .cs__swatches {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px;
+    }
+    .cs__swatch {
+      width: 168px;            /* 팔레트 사이즈 통일 */
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+    }
+    .cs__swatch-color {
+      width: 168px;
+      height: 168px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      box-sizing: border-box;
+    }
+    .cs__swatch-code { font-family: 'Pretendard', sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; }
+    .cs__swatch-name { font-family: 'Pretendard', sans-serif; font-size: 16px; font-weight: 700; color: #113143; }
+    .cs__swatch-role { font-family: 'Pretendard', sans-serif; font-size: 14px; color: rgba(13,45,74,0.45); line-height: 1.5; }
+    .cs__divider { height: 1px; background: #d8e8f2; margin-bottom: 56px; }
+    /* 하단 — TYPOGRAPHY | COMPONENTS */
+    .cs__bottom { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 56px; align-items: start; }
+    .cs__v-divider { width: 1px; background: #d8e8f2; align-self: stretch; }
+    .cs__col .cs__sub-label { display: block; margin-bottom: 44px; }
+    .cs__typo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+    .cs__typo-role { font-family: 'Pretendard', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #1a6da8; margin-bottom: 18px; }
+    .cs__typo-font { font-family: 'Pretendard', sans-serif; font-size: clamp(18px, 1.6vw, 22px); font-weight: 700; color: #0d2d4a; }
+    .cs__typo-note { font-family: 'Pretendard', sans-serif; font-size: 14px; color: rgba(13,45,74,0.45); margin-top: 10px; line-height: 1.5; }
+    /* COMPONENTS */
+    .cs__comp-grid { display: inline-grid; grid-template-columns: auto auto; column-gap: 32px; row-gap: 16px; align-items: center; justify-items: start; }
+    .cs__comp-spec { font-family: 'Pretendard', sans-serif; font-size: 13px; color: rgba(13,45,74,0.45); letter-spacing: 0.02em; }
+    .cs__comp-btn-green {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 26px 13px; border: 3px solid #2f4732; border-radius: 999px;
+      background: linear-gradient(135deg, #3f6845 0%, #2f4732 56%, #193024 100%);
+      color: #f8fdff; font-family: 'Pretendard', sans-serif; font-size: 16px; font-weight: 800;
+      box-shadow: 0 5px 0 #14291e;
+    }
+    .cs__comp-card {
+      width: 260px; margin-top: 0; padding: 20px 22px;
+      border: 3px solid rgba(248,253,255,0.94); border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,253,255,0.9)), #dff4ff;
+      box-shadow: 0 6px 0 #9fd2eb, 0 16px 24px rgba(55,127,165,0.12);
+    }
+    .cs__comp-card strong { display: block; font-family: 'Pretendard', sans-serif; font-size: 18px; font-weight: 800; color: #113143; margin-bottom: 4px; }
+    .cs__comp-card span { font-family: 'Pretendard', sans-serif; font-size: 14px; color: rgba(17,49,67,0.6); }
+    @media (max-width: 760px) {
+      .cs__bottom { grid-template-columns: 1fr; gap: 40px; }
+      .cs__v-divider { display: none; }
+    }
+  </style>
+
+  <section class="cs">
+    <span class="cs__label">DESIGN SYSTEM</span>
+
+    <!-- COLOR -->
+    <div class="cs__color-block">
+      <p class="cs__sub-label">Color Palette</p>
+      <div class="cs__swatches">
+        <div class="cs__swatch">
+          <div class="cs__swatch-color" style="background:#f8fdff; border:1px solid #e4eef6;"><span class="cs__swatch-code" style="color:#113143;">#F8FDFF</span></div>
+          <p class="cs__swatch-name">Snow White</p>
+          <p class="cs__swatch-role">베이스 화이트</p>
+        </div>
+        <div class="cs__swatch">
+          <div class="cs__swatch-color" style="background:#dff4ff; border:1px solid #cce4f0;"><span class="cs__swatch-code" style="color:#113143;">#DFF4FF</span></div>
+          <p class="cs__swatch-name">Ice</p>
+          <p class="cs__swatch-role">섹션 배경</p>
+        </div>
+        <div class="cs__swatch">
+          <div class="cs__swatch-color" style="background:#b8e2fb; border:1px solid #a5d3ee;"><span class="cs__swatch-code" style="color:#113143;">#B8E2FB</span></div>
+          <p class="cs__swatch-name">Sky Blue</p>
+          <p class="cs__swatch-role">카드 · 트랙</p>
+        </div>
+        <div class="cs__swatch">
+          <div class="cs__swatch-color" style="background:#2f4732;"><span class="cs__swatch-code" style="color:#eaf6ec;">#2F4732</span></div>
+          <p class="cs__swatch-name">Pine Green</p>
+          <p class="cs__swatch-role">CTA · 브랜드</p>
+        </div>
+        <div class="cs__swatch">
+          <div class="cs__swatch-color" style="background:#113143;"><span class="cs__swatch-code" style="color:#dff4ff;">#113143</span></div>
+          <p class="cs__swatch-name">Deep Navy</p>
+          <p class="cs__swatch-role">본문 · 제목</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cs__divider"></div>
+
+    <!-- TYPOGRAPHY | COMPONENTS -->
+    <div class="cs__bottom">
+      <div class="cs__col">
+        <p class="cs__sub-label">Typography</p>
+        <div class="cs__typo-grid">
+          <div>
+            <p class="cs__typo-role">Heading</p>
+            <p class="cs__typo-font">Ownglyph ParkDaHyun</p>
+            <p class="cs__typo-note">제목 · 로고 손글씨</p>
+          </div>
+          <div>
+            <p class="cs__typo-role">Body</p>
+            <p class="cs__typo-font">Pretendard</p>
+            <p class="cs__typo-note">본문 · UI 텍스트</p>
+          </div>
+        </div>
+      </div>
+      <div class="cs__v-divider"></div>
+      <div class="cs__col">
+        <p class="cs__sub-label">Components</p>
+        <div class="cs__comp-grid">
+          <span class="cs__comp-btn-green">▶ PLAY NOW</span>
+          <div class="cs__comp-card">
+            <strong>News Card</strong>
+            <span>업데이트 · 공지 카드</span>
+          </div>
+          <p class="cs__comp-spec">CTA Button · radius full (pill)</p>
+          <p class="cs__comp-spec">Card · radius 12px</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY INTERACTIONS -->
+  <style>
+    .ki {
+      background: #ffffff;
+      padding: 110px max(80px, (100% - 1440px) / 2) 130px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ki__header { text-align: center; margin-bottom: 96px; }
+    .ki__label {
+      display: block;
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; font-weight: 700; letter-spacing: 0.24em;
+      color: #1a6da8; margin-bottom: 14px;
+    }
+    .ki__title {
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(28px, 2.5vw, 40px); font-weight: 800;
+      color: #0d2d4a; letter-spacing: -0.02em;
+    }
+
+    .ki__points { position: relative; max-width: 1240px; margin: 0 auto; }
+    .ki__char {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.1;
+      z-index: 0;
+    }
+    .ki__char img { width: 100%; height: auto; display: block; }
+
+    .ki__point {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+      margin-bottom: 150px;
+    }
+    .ki__point:last-child { margin-bottom: 0; }
+    .ki__media { order: 1; position: relative; isolation: isolate; }
+    .ki__media::before {
+      content: "";
+      position: absolute;
+      top: -22px; left: 0;
+      transform: translate(-50%, -50%);
+      width: 92px; height: 92px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(186,219,248,1) 0%, rgba(186,219,248,0) 100%);
+      z-index: -1; pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .ki__point--reverse .ki__media::before {
+      left: auto; right: 0;
+      transform: translate(50%, -50%);
+      background: linear-gradient(225deg, rgba(186,219,248,1) 0%, rgba(186,219,248,0) 100%);
+    }
+    .ki__point.is-in .ki__media::before { opacity: 1; }
+    .ki__content { order: 2; }
+    .ki__point--reverse .ki__media { order: 2; }
+    .ki__point--reverse .ki__content { order: 1; }
+
+    /* floating point badge */
+    .ki__badge {
+      position: absolute;
+      top: -54px; left: 0;
+      display: inline-flex; align-items: center;
+      z-index: 4; pointer-events: none;
+    }
+    .ki__point--reverse .ki__badge { left: auto; right: 0; }
+    .ki__point--reverse .ki__badge-text { text-align: right; }
+    .ki__badge-text {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; font-weight: 600; letter-spacing: 0.05em;
+      line-height: 1.4; color: #1d3a4f;
+    }
+
+    /* media / GIF placeholder */
+    .ki__media-box {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #eef9ff 0%, #e2f3fe 100%);
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow: 0 10px 30px rgba(55,127,165,0.10);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ki__media-label {
+      position: relative; z-index: 1;
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; font-weight: 500; color: rgba(13,45,74,0.4);
+    }
+    .ki__media-box::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.5) 50%, transparent 62%);
+      transform: translateX(-100%);
+      animation: ki-shimmer 2.6s ease-in-out infinite;
+    }
+    @keyframes ki-shimmer {
+      0% { transform: translateX(-100%); }
+      55%, 100% { transform: translateX(100%); }
+    }
+
+    /* content */
+    .ki__content { max-width: 480px; }
+    .ki__point--reverse .ki__content { margin-left: auto; }
+    .ki__type {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; font-weight: 700; letter-spacing: 0.18em;
+      color: #3a78b4; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .ki__name {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 18px; font-weight: 600; color: rgba(13,45,74,0.62);
+      margin-bottom: 10px;
+    }
+    .ki__headline {
+      font-family: 'Pretendard', sans-serif;
+      font-size: clamp(22px, 1.9vw, 28px); font-weight: 800;
+      color: #0d2d4a; letter-spacing: -0.01em; line-height: 1.4;
+      margin-bottom: 20px;
+    }
+    .ki__desc {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; line-height: 1.85; color: rgba(13,45,74,0.55);
+      margin-bottom: 24px;
+    }
+    .ki__tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .ki__tag {
+      font-family: 'Pretendard', sans-serif;
+      font-size: 16px; font-weight: 600; color: #1a6da8;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(26,109,168,0.25);
+      border-radius: 100px; padding: 5px 16px;
+    }
+
+    /* scroll reveal */
+    .ki__badge, .ki__media-box, .ki__content {
+      opacity: 0; transform: translateY(36px);
+      transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1);
+    }
+    .ki__point.is-in .ki__badge,
+    .ki__point.is-in .ki__media-box,
+    .ki__point.is-in .ki__content { opacity: 1; transform: none; }
+    .ki__point.is-in .ki__media-box { opacity: 1; transition-delay: 0.05s; }
+    .ki__point.is-in .ki__content { transition-delay: 0.12s; }
+
+    @media (max-width: 1024px) {
+      .ki { padding: 80px max(28px, (100% - 1440px) / 2) 90px; }
+      .ki__header { margin-bottom: 64px; }
+      .ki__point {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        margin-bottom: 96px;
+        padding-top: 44px;
+      }
+      .ki__point .ki__badge {
+        position: static; order: 0;
+        margin: 0 0 18px 34px;
+      }
+      .ki__point .ki__media { order: 1; }
+      .ki__point .ki__content { order: 2; max-width: none; margin-left: 0; }
+    }
+  </style>
+
+  <section class="ki">
+
+    <div class="ki__header">
+      <span class="ki__label">KEY INTERACTION</span>
+      <h2 class="ki__title">웹에서 게임을 경험하다</h2>
+    </div>
+
+    <div class="ki__points">
+      <!-- POINT 01 -->
+      <div class="ki__point">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 01</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/loading.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">Loading Page</p>
+          <p class="ki__name">로딩 화면</p>
+          <h3 class="ki__headline">게임이 시작되기 전, 기대감을 높이는 첫 경험</h3>
+          <p class="ki__desc">캐릭터 애니메이션을 활용해 대기 시간을 자연스럽게 연결하고,<br>게임의 분위기를 첫 화면부터 전달했습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">CSS</span><span class="ki__tag">GSAP</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 02 -->
+      <div class="ki__point ki__point--reverse">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 02</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/cta-frog.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;object-position:5% center;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">CTA Section</p>
+          <p class="ki__name">CTA 버튼 개구리</p>
+          <h3 class="ki__headline">버튼 위에 올라타는 개구리</h3>
+          <p class="ki__desc">CTA 버튼에 호버하면 개구리가 버튼 위로 폴짝 뛰어올라,<br>클릭을 자연스럽게 유도하는 마이크로 인터랙션을 더했습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP</span><span class="ki__tag">Hover</span><span class="ki__tag">back.out</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 03 -->
+      <div class="ki__point">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 03</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/scroll-frog.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">Video Section</p>
+          <p class="ki__name">스크롤 프로그</p>
+          <h3 class="ki__headline">스크롤에 맞춰 비탈을 내려오는 개구리</h3>
+          <p class="ki__desc">스크롤 진행도에 1:1로 연동해 개구리가 비탈을 따라 미끄러지며,<br>게임의 썰매 활강 감각을 웹으로 옮겼습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP ScrollTrigger</span><span class="ki__tag">Scrub</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 04 -->
+      <div class="ki__point ki__point--reverse">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 04</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/frog-mole.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;object-position:100% center;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">Intro Section</p>
+          <p class="ki__name">게임 소개 카드</p>
+          <h3 class="ki__headline">마우스를 따라 튀어나오고 떨어지는 개구리</h3>
+          <p class="ki__desc">마우스가 닿는 모서리에서 개구리가 톡 튀어나오고,<br>빠져나가는 방향으로 쏙 떨어지듯 사라지는 두더지식 위트를 더했습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP</span><span class="ki__tag">Hover</span><span class="ki__tag">back.out</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 05 -->
+      <div class="ki__point">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 05</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/frog-snow-attack.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">Character Section</p>
+          <p class="ki__name">눈덩이 맞기</p>
+          <h3 class="ki__headline">클릭하면 팡 터지는 눈덩이</h3>
+          <p class="ki__desc">캐릭터 영역을 클릭하면 그 자리에 눈덩이가 팡 터지며,<br>게임 속 눈싸움의 재미를 인터랙션으로 옮겼습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP</span><span class="ki__tag">Click</span><span class="ki__tag">back.out</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 06 -->
+      <div class="ki__point ki__point--reverse">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 06</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/frog-scrollbar.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">Media Gallery</p>
+          <p class="ki__name">frogback 스크롤바</p>
+          <h3 class="ki__headline">개구리 썰매로 보는 갤러리 진행도</h3>
+          <p class="ki__desc">갤러리를 넘길 때마다<br>개구리 썰매가 눈길 트랙을 따라 이동하며 진행도를 보여주고,<br>트랙을 직접 끌어 원하는 장면으로 미끄러질 수 있습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP</span><span class="ki__tag">Custom Scrollbar</span><span class="ki__tag">power3.out</span></div>
+        </div>
+      </div>
+
+      <!-- POINT 07 -->
+      <div class="ki__point">
+        <div class="ki__badge"><span class="ki__badge-text">INTERACTION<br>POINT 07</span></div>
+        <div class="ki__media"><div class="ki__media-box"><video src="../assets/videos/news-frog.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block;"></video></div></div>
+        <div class="ki__content">
+          <p class="ki__type">News Section</p>
+          <p class="ki__name">방향키 내비게이션</p>
+          <h3 class="ki__headline">방향키로 카드 사이를 뛰어다니는 개구리</h3>
+          <p class="ki__desc">뉴스 섹션이 화면에 들어오면<br>←→ 방향키로 개구리가 카드 사이를 폴짝 건너뛰고,<br>↑↓ 키로 점프·착지하는 작은 게임성을 더했습니다.</p>
+          <div class="ki__tags"><span class="ki__tag">GSAP</span><span class="ki__tag">Keyboard</span><span class="ki__tag">Game-like</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KI SCROLL REVEAL -->
+  <script>
+    (function() {
+      const points = document.querySelectorAll('.ki__point');
+      if (!points.length) return;
+      if (!('IntersectionObserver' in window)) {
+        points.forEach(function(p){ p.classList.add('is-in'); });
+        return;
+      }
+      const io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.25 });
+      points.forEach(function(p){ io.observe(p); });
+    })();
+  </script>
+
+  <!-- WAVE: video → reflection -->
+  <div class="wave" style="background:#bde0f5">
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,50 C200,10 500,70 800,30 C1100,0 1300,60 1440,40 L1440,80 L0,80 Z" fill="#e8f5fc"/></svg>
+  </div>
+
+  <!-- REFLECTION -->
+  <section class="rf">
+    <span class="rf__label">REFLECTION</span>
+    <h2 class="rf__title">프로젝트를 마치며</h2>
+    <div class="rf__grid">
+      <div class="rf__card">
+        <span class="rf__card-en">What I Learned</span>
+        <p class="rf__card-ko">게임 언어를 웹으로</p>
+        <p class="rf__card-desc">게임의 비주얼 언어와<br>웹의 인터랙션 언어를<br>연결하는 방법을 배웠습니다.</p>
+      </div>
+      <div class="rf__card">
+        <span class="rf__card-en">Room to Grow</span>
+        <p class="rf__card-ko">더 깊은 인터랙션</p>
+        <p class="rf__card-desc">게임 내 요소들을<br>더 적극적으로 웹에<br>녹여내고 싶습니다.</p>
+      </div>
+      <div class="rf__card">
+        <span class="rf__card-en">Next Step</span>
+        <p class="rf__card-ko">실제 게임 연동</p>
+        <p class="rf__card-desc">Steam API 연동으로<br>실시간 리뷰·플레이어 수를<br>보여주고 싶습니다.</p>
+      </div>
+    </div>
+    <div class="rf__cta">
+      <a class="rf__nav-link rf__nav-link--prev" href="ode.html">
+        <span class="rf__nav-dir">← PREV PROJECT</span>
+        <span class="rf__nav-title">ODE</span>
+      </a>
+      <a class="rf__nav-link rf__nav-link--next" href="../index.html#work">
+        <span class="rf__nav-dir">PROJECT LIST →</span>
+        <span class="rf__nav-title">Selected Work</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- PREV / NEXT NAV -->
+  <a href="ode.html" class="proj-nav proj-nav--prev">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    <span>PREV</span>
+  </a>
+  <a href="#" class="proj-nav proj-nav--next proj-nav--disabled">
+    <span>NEXT</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M14 5l7 7-7 7"/></svg>
+  </a>
+
+  <!-- SCROLL TOP -->
+  <button id="scroll-top" aria-label="맨 위로" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+
+  <!-- SNOW EFFECT -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('snow-canvas');
+      const ctx = canvas.getContext('2d');
+      let flakes = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      function createFlake() {
+        return {
+          x: Math.random() * canvas.width,
+          y: -10,
+          r: Math.random() * 3 + 1,
+          speed: Math.random() * 1.2 + 0.4,
+          drift: Math.random() * 0.6 - 0.3,
+          opacity: Math.random() * 0.5 + 0.2
+        };
+      }
+
+      for (let i = 0; i < 120; i++) {
+        const f = createFlake();
+        f.y = Math.random() * canvas.height;
+        flakes.push(f);
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flakes.forEach(function(f) {
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(220,235,255,${f.opacity})`;
+          ctx.fill();
+          f.y += f.speed;
+          f.x += f.drift;
+          if (f.y > canvas.height + 10) {
+            Object.assign(f, createFlake());
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+  </script>
+
+  <!-- WAVE CLIP PATH -->
+  <script>
+    (function() {
+      function updateWavePath() {
+        var w = window.innerWidth;
+        var path = 'M0,40 C' + (w*240/1440) + ',80 ' + (w*480/1440) + ',0 ' + (w*720/1440) + ',40 C' + (w*960/1440) + ',80 ' + (w*1200/1440) + ',0 ' + w + ',40 L' + w + ',9999 L0,9999 Z';
+        document.getElementById('po-wave-path').setAttribute('d', path);
+      }
+      updateWavePath();
+      window.addEventListener('resize', updateWavePath);
+    })();
+  </script>
+
+  <!-- NAV + SCROLL LOGIC -->
+  <script>
+    (function() {
+      const prevNav = document.querySelector('.proj-nav--prev');
+      const nextNav = document.querySelector('.proj-nav--next');
+      const btn = document.getElementById('scroll-top');
+
+      window.addEventListener('scroll', function() {
+        btn.classList.toggle('visible', window.scrollY > 400);
+      }, { passive: true });
+      setTimeout(function() {
+        prevNav.classList.add('visible');
+        nextNav.classList.add('visible');
+      }, 800);
+
+      function slideOut(direction, url) {
+        document.body.style.transition = 'transform 0.55s cubic-bezier(0.76,0,0.24,1), opacity 0.55s ease';
+        document.body.style.transform = direction === 'next' ? 'translateX(-6%)' : 'translateX(6%)';
+        document.body.style.opacity = '0';
+        sessionStorage.setItem('slideFrom', direction === 'next' ? 'right' : 'left');
+        setTimeout(function() { window.location.href = url; }, 560);
+      }
+
+      prevNav.addEventListener('click', function(e) {
+        e.preventDefault();
+        slideOut('prev', 'ode.html');
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') slideOut('prev', 'ode.html');
+      });
+
+      // Slide-in on load
+      document.documentElement.style.opacity = '1';
+      const from = sessionStorage.getItem('slideFrom');
+      if (from) {
+        sessionStorage.removeItem('slideFrom');
+        document.body.style.transform = from === 'right' ? 'translateX(6%)' : 'translateX(-6%)';
+        document.body.style.opacity = '0';
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            document.body.style.transition = 'transform 0.55s cubic-bezier(0.76,0,0.24,1), opacity 0.55s ease';
+            document.body.style.transform = 'translateX(0)';
+            document.body.style.opacity = '1';
+            setTimeout(function() {
+              document.body.style.transform = '';
+              document.body.style.transition = '';
+              document.body.style.opacity = '';
+            }, 600);
+          });
+        });
+      }
+    })();
+  </script>
+
+  <!-- 페이지 나갈 때 페이드(크로스페이드 전환) — BACK·프로젝트 탭 클릭 시 -->
+  <script>
+  (function(){
+    var t; try { t = localStorage.getItem('theme'); } catch(e){}
+    var bg = (t === 'light') ? '#eceae6' : '#0a0a0b';
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;opacity:0;pointer-events:none;transition:opacity .42s ease;background:' + bg + ';';
+    document.body.appendChild(ov);
+    document.querySelectorAll('.pf-rail a[href]').forEach(function(a){
+      var href = a.getAttribute('href');
+      if (!href || href === '#' || a.getAttribute('target') === '_blank') return;
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        ov.style.pointerEvents = 'all';
+        requestAnimationFrame(function(){ ov.style.opacity = '1'; });
+        setTimeout(function(){ window.location.href = href; }, 400);
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

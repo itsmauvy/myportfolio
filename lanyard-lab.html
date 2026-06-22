@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lanyard Lab — 사원증 드래그 히어로</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    .stage {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #f2f1ee;
+      color: #15151a;
+      cursor: default;
+      user-select: none;
+    }
+
+    /* 배경 대형 텍스트 (깊이감) */
+    .stage__ghost {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 0 var(--gutter);
+      pointer-events: none;
+    }
+    .stage__ghost p {
+      font-weight: 800; letter-spacing: -0.04em; line-height: 0.9;
+      font-size: clamp(3.5rem, 16vw, 16rem);
+      color: #15151a; opacity: 0.05;
+    }
+
+    /* 좌하단 카피 */
+    .stage__copy { position: absolute; left: var(--gutter); bottom: clamp(2rem, 5vw, 4rem); max-width: 30ch; }
+    .stage__copy .eyebrow { display:block; margin-bottom: 14px; }
+    .stage__copy h1 { font-size: clamp(1.5rem, 3vw, 2.5rem); letter-spacing: -0.02em; line-height: 1.2; }
+
+    /* 끈(SVG) */
+    .rope { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+    .rope path { fill: none; stroke: #1f2430; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+    .rope .rope__hi { stroke: #3a4254; stroke-width: 3; }
+
+    /* 상단 고정 앵커(고리) */
+    .anchor { position: absolute; top: 0; left: 50%; transform: translate(-50%,-4px); z-index: 3; width: 56px; height: 16px; border-radius: 0 0 10px 10px; background: #1f2430; }
+
+    /* 사원증 카드 */
+    .badge {
+      position: absolute; top: 0; left: 0;
+      width: 244px;
+      transform-origin: 50% 8px;     /* 회전 기준 = 끈 구멍 */
+      z-index: 4;
+      cursor: grab;
+      touch-action: none;
+      will-change: transform;
+      filter: drop-shadow(0 22px 30px rgba(20,20,30,0.28));
+    }
+    .badge.is-grab { cursor: grabbing; }
+
+    /* 끈 구멍(클립) */
+    .badge__clip { position: relative; width: 54px; height: 18px; margin: 0 auto -2px; background: #cfcdc7; border-radius: 6px; box-shadow: inset 0 -2px 4px rgba(0,0,0,.2); }
+    .badge__hole { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); width: 26px; height: 7px; background: #f2f1ee; border-radius: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,.35); }
+
+    .badge__card {
+      background: #ffffff; border-radius: 16px; overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .badge__head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #15151a; color: #fff;
+    }
+    .badge__brand { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; }
+    .badge__staff { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; padding: 3px 8px; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; }
+
+    .badge__photo { width: 100%; aspect-ratio: 1/1; overflow: hidden; background: #ddd; }
+    .badge__photo img { width: 100%; height: 100%; object-fit: cover; -webkit-user-drag: none; }
+
+    .badge__body { padding: 14px 16px 16px; }
+    .badge__name { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; }
+    .badge__name span { font-size: 0.82rem; font-weight: 700; color: #8a8a8f; letter-spacing: 0.1em; margin-left: 6px; }
+    .badge__role { margin-top: 4px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: #5b8def; }
+
+    .badge__barcode { margin-top: 14px; height: 34px; border-radius: 3px;
+      background-image: repeating-linear-gradient(90deg, #15151a 0 2px, transparent 2px 4px, #15151a 4px 5px, transparent 5px 9px, #15151a 9px 12px, transparent 12px 14px);
+    }
+    .badge__id { margin-top: 6px; font-size: 0.62rem; letter-spacing: 0.22em; color: #9a9aa0; text-align: center; }
+
+    /* drag 힌트 */
+    .hint { position: absolute; z-index: 5; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: #15151a; background: #fff; padding: 6px 12px; border-radius: 999px; box-shadow: 0 6px 16px rgba(0,0,0,.12); transform: translate(-50%,-50%); transition: opacity .4s ease; pointer-events: none; }
+    .hint.gone { opacity: 0; }
+
+    .stage__cue { position: absolute; right: var(--gutter); bottom: clamp(2rem,5vw,4rem); font-size:.7rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#8a8a8f; }
+  </style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="stage__ghost"><p>UX/UI</p></div>
+
+    <div class="stage__copy">
+      <span class="eyebrow">UX / UI Designer &amp; Publisher</span>
+      <h1>끌어서 흔들어보세요.<br>장수빈입니다.</h1>
+    </div>
+
+    <div class="anchor"></div>
+    <svg class="rope" id="rope"><path id="ropePath" d=""></path><path id="ropePathHi" class="rope__hi" d=""></path></svg>
+
+    <!-- 사원증 -->
+    <div class="badge" id="badge">
+      <div class="badge__clip"><span class="badge__hole"></span></div>
+      <div class="badge__card">
+        <div class="badge__head"><span class="badge__brand">SOOBIN STUDIO</span><span class="badge__staff">STAFF</span></div>
+        <div class="badge__photo"><img src="assets/images/profile.jpg" alt="장수빈" draggable="false"></div>
+        <div class="badge__body">
+          <p class="badge__name">장수빈 <span>SOOBIN</span></p>
+          <p class="badge__role">UX/UI DESIGNER &amp; PUBLISHER</p>
+          <div class="badge__barcode"></div>
+          <p class="badge__id">ID · 1997 · 0301</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">✦ DRAG ME</div>
+    <span class="stage__cue">Scroll ↓</span>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+    var stage = document.getElementById('stage');
+    var badge = document.getElementById('badge');
+    var ropePath = document.getElementById('ropePath');
+    var ropePathHi = document.getElementById('ropePathHi');
+    var hint = document.getElementById('hint');
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    var SEG = 14, ITER = 18, GRAVITY = 1.1, FRICTION = 0.99;
+    var W, H, anchorX, anchorY, segLen;
+    var pts = [];
+    var dragging = false, dragPt = null, hinted = false;
+    var pointer = { x: 0, y: 0 }, grab = { x: 0, y: 0 };
+
+    function setup() {
+      var r = stage.getBoundingClientRect();
+      W = r.width; H = r.height;
+      anchorX = W * 0.5; anchorY = 8;                 // 앵커 바로 아래
+      var ropeLen = Math.min(H * 0.34, 320);
+      segLen = ropeLen / SEG;
+      pts = [];
+      for (var i = 0; i <= SEG; i++) {
+        // 전부 앵커에 모아두고 시작 → 중력으로 "툭" 떨어짐
+        var jx = anchorX + (i === SEG ? 40 : 0);       // 끝점만 살짝 옆 → 흔들며 안착
+        pts.push({ x: jx, y: anchorY, ox: jx, oy: anchorY, pinned: i === 0 });
+      }
+      if (reduce) {                                    // 모션 off → 곧장 정지 자세
+        for (var k = 0; k <= SEG; k++) { pts[k].x = anchorX; pts[k].y = anchorY + segLen * k; pts[k].ox = pts[k].x; pts[k].oy = pts[k].y; }
+      }
+      placeHint();
+    }
+
+    function placeHint() {
+      var last = pts[SEG];
+      hint.style.left = (last.x + 90) + 'px';
+      hint.style.top = (last.y + 60) + 'px';
+    }
+
+    function integrate() {
+      for (var i = 1; i <= SEG; i++) {
+        var p = pts[i];
+        if (dragging && p === dragPt) {
+          p.ox = p.x; p.oy = p.y;                       // 드래그 중: 포인터 추종(관성 유지)
+          p.x = pointer.x - grab.x; p.y = pointer.y - grab.y;
+          continue;
+        }
+        var vx = (p.x - p.ox) * FRICTION, vy = (p.y - p.oy) * FRICTION;
+        p.ox = p.x; p.oy = p.y;
+        p.x += vx; p.y += vy + GRAVITY;
+      }
+    }
+
+    function constrain() {
+      for (var k = 0; k < ITER; k++) {
+        pts[0].x = anchorX; pts[0].y = anchorY;
+        for (var i = 0; i < SEG; i++) {
+          var a = pts[i], b = pts[i + 1];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var d = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+          var f = (d - segLen) / d;
+          var w1 = (a.pinned || (dragging && a === dragPt)) ? 0 : 1;
+          var w2 = (b.pinned || (dragging && b === dragPt)) ? 0 : 1;
+          var tw = w1 + w2; if (tw === 0) continue;
+          a.x += dx * f * (w1 / tw); a.y += dy * f * (w1 / tw);
+          b.x -= dx * f * (w2 / tw); b.y -= dy * f * (w2 / tw);
+        }
+      }
+    }
+
+    function render() {
+      var d = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+      for (var i = 1; i <= SEG; i++) d += ' L ' + pts[i].x.toFixed(1) + ' ' + pts[i].y.toFixed(1);
+      ropePath.setAttribute('d', d);
+      ropePathHi.setAttribute('d', d);
+      var last = pts[SEG], prev = pts[SEG - 1];
+      var ang = Math.atan2(last.y - prev.y, last.x - prev.x) - Math.PI / 2;
+      badge.style.transform = 'translate(' + (last.x).toFixed(1) + 'px,' + (last.y).toFixed(1) + 'px) translateX(-50%) rotate(' + ang.toFixed(4) + 'rad)';
+      if (!dragging) placeHint();
+    }
+
+    function loop() {
+      if (!reduce) { integrate(); constrain(); }
+      render();
+      requestAnimationFrame(loop);
+    }
+
+    // ── 드래그 ──
+    function toStage(e) {
+      var r = stage.getBoundingClientRect();
+      pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top;
+    }
+    badge.addEventListener('pointerdown', function (e) {
+      toStage(e);
+      dragging = true; dragPt = pts[SEG];
+      grab.x = pointer.x - dragPt.x; grab.y = pointer.y - dragPt.y;
+      badge.classList.add('is-grab');
+      badge.setPointerCapture(e.pointerId);
+      if (!hinted) { hinted = true; hint.classList.add('gone'); }
+    });
+    badge.addEventListener('pointermove', function (e) { if (dragging) toStage(e); });
+    function release() { dragging = false; dragPt = null; badge.classList.remove('is-grab'); }
+    badge.addEventListener('pointerup', release);
+    badge.addEventListener('pointercancel', release);
+
+    window.addEventListener('resize', setup);
+    setup();
+    loop();
+    // 첫 진입 힌트 자동 소멸
+    setTimeout(function () { if (!hinted) hint.classList.add('gone'); }, 4000);
+  })();
+  </script>
+</body>
+</html>

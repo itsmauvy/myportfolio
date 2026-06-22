@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ko" style="background:#f8f7ff">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOTALK — SOOBIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #f8f7ff; color: #1a1035; font-family: 'Pretendard', sans-serif; overflow-x: hidden; }
+
+    :root {
+      --purple: #7c5cfc;
+      --purple-light: #ede9ff;
+      --purple-mid: #c4b5fd;
+      --muted: rgba(26,16,53,0.45);
+      --border: rgba(124,92,252,0.15);
+      --pad: max(48px, 8vw);
+    }
+
+    /* ── RAIL NAV ── */
+    .pf-rail { position: fixed; inset: 0 0 auto 0; height: 60px; z-index: 1000; display: flex; align-items: center; gap: 14px; padding: 0 clamp(20px,5vw,48px); background: rgba(248,247,255,0.88); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); border-bottom: 1px solid var(--border); }
+    .pf-rail a, .pf-rail span { text-decoration: none; }
+    .pf-rail__home { font-weight: 800; letter-spacing: .1em; font-size: 15px; display: inline-flex; gap: 7px; align-items: center; flex-shrink: 0; color: var(--muted); transition: gap .25s, color .2s; }
+    .pf-rail__home:hover { gap: 11px; color: var(--purple); }
+    .pf-rail__tabs { display: flex; gap: 4px; margin: 0 auto; overflow-x: auto; scrollbar-width: none; }
+    .pf-rail__tabs::-webkit-scrollbar { display: none; }
+    .pf-rail__tab { white-space: nowrap; font-size: 13px; font-weight: 700; letter-spacing: .04em; padding: 7px 13px; border-radius: 999px; opacity: .55; color: #1a1035; text-decoration: none; transition: opacity .25s, background .25s; }
+    .pf-rail__tab:hover { opacity: 1; }
+    .pf-rail__tab--active { opacity: 1; background: rgba(124,92,252,0.15); color: var(--purple); }
+    .pf-rail__tab--soon { opacity: .3; pointer-events: none; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 0 var(--pad) 80px;
+      background: linear-gradient(160deg, #f0ecff 0%, #f8f7ff 60%);
+      position: relative; overflow: hidden;
+    }
+    .hero__bg-text {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: 'Syne', sans-serif; font-size: clamp(100px, 18vw, 220px);
+      font-weight: 800; color: rgba(124,92,252,0.06); white-space: nowrap;
+      pointer-events: none; user-select: none; letter-spacing: -.02em;
+    }
+    .hero__tag {
+      font-size: 13px; font-weight: 700; letter-spacing: .2em;
+      color: var(--purple); margin-bottom: 20px;
+    }
+    .hero__title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(52px, 7vw, 96px); font-weight: 800;
+      letter-spacing: -.02em; line-height: .95; color: #1a1035;
+      margin-bottom: 28px;
+    }
+    .hero__sub {
+      font-size: clamp(16px, 1.6vw, 20px); color: var(--muted);
+      line-height: 1.6; max-width: 560px; margin-bottom: 48px;
+    }
+    .hero__meta {
+      display: flex; gap: 48px; flex-wrap: wrap;
+    }
+    .hero__meta-item dt {
+      font-size: 11px; font-weight: 700; letter-spacing: .18em;
+      color: var(--purple); margin-bottom: 6px;
+    }
+    .hero__meta-item dd { font-size: 15px; font-weight: 600; color: #1a1035; line-height: 1.5; }
+
+    /* ── SECTION BASE ── */
+    section { padding: 100px var(--pad); }
+    .sec-label {
+      font-size: 12px; font-weight: 700; letter-spacing: .22em;
+      color: var(--purple); text-transform: uppercase; margin-bottom: 16px;
+    }
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 3.5vw, 44px); font-weight: 800;
+      color: #1a1035; letter-spacing: -.01em; line-height: 1.15;
+      margin-bottom: 48px;
+    }
+    .divider { height: 1px; background: var(--border); margin: 0 var(--pad); }
+
+    /* ── OVERVIEW ── */
+    .overview { background: #fff; }
+    .overview__grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+      background: var(--border); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden;
+    }
+    .overview__item { background: #fff; padding: 32px 28px; }
+    .overview__item dt { font-size: 11px; font-weight: 700; letter-spacing: .18em; color: var(--purple); margin-bottom: 12px; }
+    .overview__item dd { font-size: 15px; font-weight: 600; color: #1a1035; line-height: 1.6; }
+
+    /* ── MARKET RESEARCH ── */
+    .market { background: var(--purple-light); }
+    .market__stats {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 48px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 14px; padding: 28px 24px;
+      border: 1px solid var(--border);
+    }
+    .stat-card__num {
+      font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800;
+      color: var(--purple); line-height: 1;
+    }
+    .stat-card__label { font-size: 14px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+    .market__quote {
+      background: var(--purple); border-radius: 14px; padding: 28px 32px;
+      color: #fff; font-size: 18px; font-weight: 600; line-height: 1.7;
+      text-align: center;
+    }
+
+    /* ── PROBLEM ── */
+    .problem { background: #fff; }
+    .problem__list { display: flex; flex-direction: column; gap: 0; }
+    .problem__item {
+      display: grid; grid-template-columns: 80px 1fr;
+      gap: 32px; align-items: start;
+      padding: 36px 0; border-bottom: 1px solid var(--border);
+    }
+    .problem__item:first-child { border-top: 1px solid var(--border); }
+    .problem__num {
+      font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800;
+      color: var(--purple-mid); line-height: 1;
+    }
+    .problem__title { font-size: 20px; font-weight: 800; color: #1a1035; margin-bottom: 10px; }
+    .problem__desc { font-size: 15px; color: var(--muted); line-height: 1.8; }
+
+    /* ── USER NEEDS ── */
+    .needs { background: #f8f7ff; }
+    .needs__grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+    .need-card {
+      background: #fff; border-radius: 16px; padding: 32px 28px;
+      border: 1px solid var(--border);
+    }
+    .need-card__icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--purple-light); display: flex; align-items: center;
+      justify-content: center; margin-bottom: 20px; font-size: 20px;
+    }
+    .need-card__title { font-size: 18px; font-weight: 800; color: #1a1035; margin-bottom: 10px; }
+    .need-card__desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    /* ── GOALS ── */
+    .goals { background: #1a1035; }
+    .goals .sec-title { color: #fff; }
+    .goals .sec-label { color: var(--purple-mid); }
+    .goals__list { display: flex; flex-direction: column; gap: 0; }
+    .goal-item {
+      display: grid; grid-template-columns: 60px 1fr;
+      gap: 28px; align-items: center;
+      padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .goal-item:first-child { border-top: 1px solid rgba(255,255,255,.08); }
+    .goal-num { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--purple-mid); }
+    .goal-text { font-size: 18px; font-weight: 600; color: #fff; line-height: 1.5; }
+    .goal-sub { font-size: 14px; color: rgba(255,255,255,.45); margin-top: 4px; }
+
+    /* ── DESIGN SYSTEM ── */
+    .ds { background: #fff; }
+    .ds__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .ds__block { }
+    .ds__block-title { font-size: 13px; font-weight: 700; letter-spacing: .16em; color: var(--purple); margin-bottom: 20px; }
+    .color-swatches { display: flex; gap: 10px; }
+    .swatch { width: 48px; height: 48px; border-radius: 10px; }
+    .type-sample { display: flex; flex-direction: column; gap: 10px; }
+    .type-row { display: flex; align-items: baseline; gap: 16px; }
+    .type-name { font-size: 11px; color: var(--muted); min-width: 80px; }
+
+    /* ── SCREENS ── */
+    .screens { background: var(--purple-light); }
+    .screens__grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+    .screen-frame {
+      background: #fff; border-radius: 20px;
+      border: 1px solid var(--border);
+      aspect-ratio: 9/19.5; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .screen-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .screen-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(160deg, #ede9ff, #f3f0ff);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 8px;
+    }
+    .screen-placeholder span { font-size: 11px; color: var(--purple-mid); font-weight: 600; letter-spacing: .08em; }
+    .screens__label { text-align: center; font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 14px; }
+
+    /* ── FINAL ── */
+    .final { background: #fff; }
+    .final__hero {
+      background: linear-gradient(135deg, #7c5cfc, #a78bfa);
+      border-radius: 20px; padding: 60px; margin-bottom: 48px;
+      display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    }
+    .final__hero-text h3 { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .final__hero-text p { font-size: 16px; color: rgba(255,255,255,.75); line-height: 1.7; max-width: 400px; }
+    .final__screens { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+
+    /* ── REFLECTION ── */
+    .reflection { background: #f8f7ff; }
+    .reflection__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .rf-card {
+      background: #fff; border-radius: 16px; padding: 32px 28px;
+      border: 1px solid var(--border);
+    }
+    .rf-card__title { font-size: 16px; font-weight: 800; color: var(--purple); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .rf-card__body { font-size: 14px; color: var(--muted); line-height: 1.8; }
+
+    @media (max-width: 900px) {
+      .overview__grid, .market__stats, .needs__grid, .screens__grid, .final__screens { grid-template-columns: repeat(2,1fr); }
+      .ds__grid, .reflection__grid { grid-template-columns: 1fr; }
+      .final__hero { flex-direction: column; }
+      .pf-rail__tabs { display: none; }
+      .pf-rail { padding: 0 20px; }
+      section { padding: 60px max(24px,4vw); }
+      :root { --pad: max(24px,4vw); }
+    }
+    @media (max-width: 600px) {
+      .overview__grid, .screens__grid, .final__screens { grid-template-columns: 1fr; }
+      .needs__grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="pf-rail">
+    <a class="pf-rail__home" href="../index.html">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      BACK
+    </a>
+    <div class="pf-rail__tabs">
+      <a class="pf-rail__tab" href="ode.html">ODE</a>
+      <span class="pf-rail__tab pf-rail__tab--soon">상상의문</span>
+      <a class="pf-rail__tab" href="sledding.html">Sledding</a>
+      <a class="pf-rail__tab pf-rail__tab--active" href="notalk.html">노톡</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__bg-text">NOTALK</div>
+    <p class="hero__tag">04 / APP UX DESIGN</p>
+    <h1 class="hero__title">NOTALK</h1>
+    <p class="hero__sub">할머니와 할아버지를 위한, 편안한 연락.<br>디지털 소외 계층을 위한 앱 UX 재설계 프로젝트.</p>
+    <dl class="hero__meta">
+      <div class="hero__meta-item"><dt>ROLE</dt><dd>UX Research<br>UI Design</dd></div>
+      <div class="hero__meta-item"><dt>DURATION</dt><dd>4주</dd></div>
+      <div class="hero__meta-item"><dt>SCOPE OF WORK</dt><dd>UX Research<br>Visual Design<br>Prototyping</dd></div>
+      <div class="hero__meta-item"><dt>TOOLS</dt><dd>Figma</dd></div>
+    </dl>
+  </section>
+
+  <!-- OVERVIEW -->
+  <section class="overview">
+    <p class="sec-label">Overview</p>
+    <h2 class="sec-title">프로젝트 개요</h2>
+    <dl class="overview__grid">
+      <div class="overview__item">
+        <dt>배경</dt>
+        <dd>스마트폰 보급률이 높아졌지만 노인 사용자의 디지털 소외는 여전히 심각합니다.</dd>
+      </div>
+      <div class="overview__item">
+        <dt>문제</dt>
+        <dd>기존 메시지 앱은 작은 글씨, 복잡한 UI로 노인 사용자가 혼자 사용하기 어렵습니다.</dd>
+      </div>
+      <div class="overview__item">
+        <dt>목표</dt>
+        <dd>누군가의 도움 없이 가족과 연락할 수 있는, 직관적인 메시지 앱을 설계합니다.</dd>
+      </div>
+      <div class="overview__item">
+        <dt>결과</dt>
+        <dd>단순하고 큰 UI, 음성 입력, 자주 쓰는 메시지 등 노인 친화적 기능 중심으로 설계.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- MARKET RESEARCH -->
+  <section class="market">
+    <p class="sec-label">Market Research</p>
+    <h2 class="sec-title">시장 조사</h2>
+    <div class="market__stats">
+      <div class="stat-card">
+        <p class="stat-card__num">36.8%</p>
+        <p class="stat-card__label">65세 이상 스마트폰 사용자 중<br>앱 사용에 어려움을 겪는 비율</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card__num">72%</p>
+        <p class="stat-card__label">노인 사용자가 가장 많이 사용하는<br>스마트폰 기능 — 전화/문자</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-card__num">1/3</p>
+        <p class="stat-card__label">65세 이상 노인 중 디지털 기기 사용을<br>가족에게 의존하는 비율</p>
+      </div>
+    </div>
+    <div class="market__quote">
+      "앱을 쓰려다가 어디를 눌러야 할지 몰라서 포기했어요. 글씨가 너무 작아요."
+    </div>
+  </section>
+
+  <!-- PROBLEM DEFINITION -->
+  <section class="problem">
+    <p class="sec-label">Problem Definition</p>
+    <h2 class="sec-title">핵심 문제</h2>
+    <div class="problem__list">
+      <div class="problem__item">
+        <span class="problem__num">01</span>
+        <div>
+          <p class="problem__title">가독성 부족</p>
+          <p class="problem__desc">기존 앱의 작은 글씨와 낮은 대비, 복잡한 아이콘은 시력이 저하된 노인 사용자에게 큰 장벽입니다. 확대 기능이 있어도 레이아웃이 깨지는 경우가 많습니다.</p>
+        </div>
+      </div>
+      <div class="problem__item">
+        <span class="problem__num">02</span>
+        <div>
+          <p class="problem__title">사용자 흐름 복잡성</p>
+          <p class="problem__desc">메시지 전송까지 3–5단계의 탭이 필요하고, 실수로 뒤로 가거나 다른 화면으로 이동했을 때 다시 돌아오는 방법을 모르는 경우가 많습니다.</p>
+        </div>
+      </div>
+      <div class="problem__item">
+        <span class="problem__num">03</span>
+        <div>
+          <p class="problem__title">입력 방식의 한계</p>
+          <p class="problem__desc">손 떨림이나 관절 문제로 터치 정확도가 낮고, 작은 키보드 타이핑이 어려운 사용자에게 텍스트 입력 자체가 큰 부담입니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- USER NEEDS -->
+  <section class="needs">
+    <p class="sec-label">User Needs</p>
+    <h2 class="sec-title">사용자 니즈</h2>
+    <div class="needs__grid">
+      <div class="need-card">
+        <div class="need-card__icon">👁️</div>
+        <p class="need-card__title">잘 보이는 화면</p>
+        <p class="need-card__desc">큰 글씨, 높은 대비, 충분한 여백. 시력이 낮아도 화면 내용을 한눈에 파악할 수 있어야 합니다.</p>
+      </div>
+      <div class="need-card">
+        <div class="need-card__icon">👆</div>
+        <p class="need-card__title">쉬운 조작</p>
+        <p class="need-card__desc">큰 터치 영역, 단순한 탐색 구조. 실수로 잘못 눌러도 쉽게 되돌아올 수 있어야 합니다.</p>
+      </div>
+      <div class="need-card">
+        <div class="need-card__icon">🎤</div>
+        <p class="need-card__title">편한 입력</p>
+        <p class="need-card__desc">음성 입력, 자주 쓰는 메시지 저장, 큰 키보드. 타이핑이 힘들어도 메시지를 보낼 수 있어야 합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT GOALS -->
+  <section class="goals">
+    <p class="sec-label">Project Goals</p>
+    <h2 class="sec-title">설계 목표</h2>
+    <div class="goals__list">
+      <div class="goal-item">
+        <span class="goal-num">01</span>
+        <div>
+          <p class="goal-text">3탭 이내로 메시지 전송 완료</p>
+          <p class="goal-sub">최소한의 단계로 핵심 기능에 도달할 수 있는 간결한 User Flow</p>
+        </div>
+      </div>
+      <div class="goal-item">
+        <span class="goal-num">02</span>
+        <div>
+          <p class="goal-text">AA 이상 대비율 · 최소 18px 이상 텍스트</p>
+          <p class="goal-sub">WCAG 접근성 기준을 충족하는 시각적 설계</p>
+        </div>
+      </div>
+      <div class="goal-item">
+        <span class="goal-num">03</span>
+        <div>
+          <p class="goal-text">음성 입력 및 즐겨찾기 메시지 기능 제공</p>
+          <p class="goal-sub">타이핑이 어려운 사용자를 위한 대안적 입력 방식</p>
+        </div>
+      </div>
+      <div class="goal-item">
+        <span class="goal-num">04</span>
+        <div>
+          <p class="goal-text">명확한 피드백 — 전송 완료, 오류 상태 표시</p>
+          <p class="goal-sub">불안감을 줄이는 시스템 상태 가시성 확보</p>
+        </div>
+      </div>
+      <div class="goal-item">
+        <span class="goal-num">05</span>
+        <div>
+          <p class="goal-text">구조적으로 복잡하지 않은 단일 목적 앱</p>
+          <p class="goal-sub">NOTALK는 오직 가족과의 연락에만 집중합니다</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESIGN SYSTEM -->
+  <section class="ds">
+    <p class="sec-label">Design System</p>
+    <h2 class="sec-title">디자인 시스템</h2>
+    <div class="ds__grid">
+      <div class="ds__block">
+        <p class="ds__block-title">COLOR</p>
+        <div class="color-swatches">
+          <div class="swatch" style="background:#7c5cfc" title="Primary"></div>
+          <div class="swatch" style="background:#a78bfa" title="Secondary"></div>
+          <div class="swatch" style="background:#ede9ff" title="Light"></div>
+          <div class="swatch" style="background:#1a1035" title="Dark"></div>
+          <div class="swatch" style="background:#ffffff;border:1px solid #ede9ff" title="White"></div>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.6">보라색 계열은 따뜻하고 차분한 인상을 주며, 고대비 조합으로 접근성을 확보합니다.</p>
+      </div>
+      <div class="ds__block">
+        <p class="ds__block-title">TYPOGRAPHY</p>
+        <div class="type-sample">
+          <div class="type-row">
+            <span class="type-name" style="font-size:11px">H1 / 32px</span>
+            <span style="font-size:32px;font-weight:800;color:#1a1035">가나다라</span>
+          </div>
+          <div class="type-row">
+            <span class="type-name" style="font-size:11px">H2 / 24px</span>
+            <span style="font-size:24px;font-weight:700;color:#1a1035">가나다라</span>
+          </div>
+          <div class="type-row">
+            <span class="type-name" style="font-size:11px">Body / 18px</span>
+            <span style="font-size:18px;font-weight:400;color:var(--muted)">최소 18px — 노인 접근성 기준</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREENS -->
+  <section class="screens">
+    <p class="sec-label">UI Design</p>
+    <h2 class="sec-title">주요 화면</h2>
+    <div class="screens__grid">
+      <div>
+        <div class="screen-frame">
+          <div class="screen-placeholder"><span>홈 화면</span></div>
+        </div>
+        <p class="screens__label">홈 — 연락처</p>
+      </div>
+      <div>
+        <div class="screen-frame">
+          <div class="screen-placeholder"><span>대화 화면</span></div>
+        </div>
+        <p class="screens__label">메시지 대화</p>
+      </div>
+      <div>
+        <div class="screen-frame">
+          <div class="screen-placeholder"><span>입력 화면</span></div>
+        </div>
+        <p class="screens__label">음성 / 키보드 입력</p>
+      </div>
+      <div>
+        <div class="screen-frame">
+          <div class="screen-placeholder"><span>즐겨찾기</span></div>
+        </div>
+        <p class="screens__label">자주 쓰는 메시지</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL DESIGN -->
+  <section class="final">
+    <p class="sec-label">Final Design</p>
+    <h2 class="sec-title">최종 디자인</h2>
+    <div class="final__hero">
+      <div class="final__hero-text">
+        <h3>혼자서도<br>할 수 있어요</h3>
+        <p>NOTALK는 스마트폰이 낯선 분들도 가족에게 먼저 연락할 수 있도록, 모든 과정을 단순하게 만들었습니다.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,80px);gap:12px">
+        <div style="background:rgba(255,255,255,.15);border-radius:14px;aspect-ratio:9/19.5"></div>
+        <div style="background:rgba(255,255,255,.2);border-radius:14px;aspect-ratio:9/19.5;margin-top:-16px"></div>
+        <div style="background:rgba(255,255,255,.15);border-radius:14px;aspect-ratio:9/19.5"></div>
+      </div>
+    </div>
+    <div class="final__screens">
+      <div>
+        <div class="screen-frame"><div class="screen-placeholder"><span>Onboarding</span></div></div>
+        <p class="screens__label">온보딩</p>
+      </div>
+      <div>
+        <div class="screen-frame"><div class="screen-placeholder"><span>Messaging</span></div></div>
+        <p class="screens__label">메시지</p>
+      </div>
+      <div>
+        <div class="screen-frame"><div class="screen-placeholder"><span>Settings</span></div></div>
+        <p class="screens__label">설정</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REFLECTION -->
+  <section class="reflection">
+    <p class="sec-label">Reflection</p>
+    <h2 class="sec-title">회고</h2>
+    <div class="reflection__grid">
+      <div class="rf-card">
+        <p class="rf-card__title">🎯 배운 점</p>
+        <p class="rf-card__body">접근성은 특정 사용자를 위한 부가 기능이 아니라, 모든 사용자 경험의 기준이 되어야 한다는 것을 배웠습니다. 단순함이 얼마나 어려운 설계 결정인지도 실감했습니다.</p>
+      </div>
+      <div class="rf-card">
+        <p class="rf-card__title">🔍 아쉬운 점</p>
+        <p class="rf-card__body">실제 노인 사용자를 대상으로 한 직접 인터뷰와 사용성 테스트를 진행하지 못했습니다. 다음 프로젝트에서는 반드시 실사용자 검증 단계를 포함하고 싶습니다.</p>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>

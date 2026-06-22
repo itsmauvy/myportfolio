@@ -1,0 +1,14 @@
+/* theme: 노톡 — 모임 앱 기획 / 클린·프렌들리·소셜
+   팔레트: 화이트 + 친근한 1컬러 / 헤드라인: 깔끔 산세리프 */
+/* 헤드라인도 Pretendard 계열로 유지 (가장 깔끔) — 별도 폰트 import 없음 */
+
+:root {
+  --bg:     #ffffff;
+  --surface:#f4f6fb;
+  --fg:     #1a1d29;
+  --muted:  rgba(26, 29, 41, 0.6);
+  --line:   #e7e9f0;
+  --accent: #5b8def;   /* 친근한 1컬러 (소셜 블루) */
+
+  --font-head: var(--font-sans);
+}

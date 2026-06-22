@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Lab — 벤토 허브 (vexoo형 / 다크·라이트)</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    /* ===== 테마 토큰 ===== */
+    :root[data-theme="dark"] {
+      --page-bg: #0a0a0b; --page-fg: #f4f4f3; --muted: #8a8a8f;
+      --card-bg: rgba(255,255,255,0.08); --card-border: rgba(255,255,255,0.10);
+      --ghost-a: #ffffff; --ghost-b: #c2c2cb; --ghost-op: 0.95; --ghost-glow: rgba(255,255,255,0.045);
+      --hairline: rgba(255,255,255,0.12); --chip-border: rgba(255,255,255,0.16);
+    }
+    :root[data-theme="light"] {
+      --page-bg: #eceae6; --page-fg: #15151a; --muted: #6b6b70;
+      --card-bg: rgba(244,243,240,0.52); --card-border: rgba(0,0,0,0.07);
+      --ghost-a: #15151a; --ghost-b: #9a9aa0; --ghost-op: 0.92; --ghost-glow: rgba(0,0,0,0.03);
+      --hairline: rgba(0,0,0,0.1); --chip-border: rgba(0,0,0,0.14);
+    }
+    body { background: var(--page-bg); color: var(--page-fg); transition: background .5s var(--ease), color .5s var(--ease); }
+
+    /* ===== 고정 헤더 ===== */
+    .site-header { position: fixed; inset: 0 0 auto 0; height: 60px; display: flex; align-items: center; justify-content: space-between; padding-inline: var(--gutter); z-index: 100;
+      background: transparent; border: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }   /* 투명 플로팅 헤더 (회색 띠 제거) */
+    .hd-brand { display: inline-flex; align-items: baseline; }
+    .hd-logo { font-weight: 800; letter-spacing: 0.12em; }
+    .hd-cursor { font-weight: 800; margin-left: 1px; opacity: .9; animation: hdBlink 1s steps(1) infinite; }
+    @keyframes hdBlink { 50% { opacity: 0; } }
+    .hd-right { display: flex; align-items: center; gap: 22px; }
+    .hd-nav { display: flex; gap: 20px; }
+    .hd-nav a { font-size: 0.95rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--page-fg); text-decoration: none; display: inline-block; overflow: hidden; height: 1.4em; opacity: 0.5; transition: opacity .3s; }
+    .hd-nav a:hover { opacity: 1; }
+    .hd-nav .nav-link-inner { position: relative; display: inline-block; }
+    .hd-nav .nav-link-inner span { display: block; line-height: 1.4em; transition: transform .3s cubic-bezier(.76,0,.24,1); }
+    .hd-nav .nav-link-inner span:first-child { transform: translateY(0%); }
+    .hd-nav .nav-link-inner span:last-child { position: absolute; left: 0; top: 0; width: 100%; transform: translateY(100%); }
+    .hd-nav a:hover .nav-link-inner span:first-child { transform: translateY(-100%); }
+    .hd-nav a:hover .nav-link-inner span:last-child { transform: translateY(0%); }
+    .theme-toggle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--card-border); background: var(--card-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: var(--page-fg); display: grid; place-items: center; cursor: pointer; transition: transform .3s, border-color .3s; }
+    .theme-toggle:hover { transform: rotate(20deg); border-color: var(--muted); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    [data-theme="dark"] .theme-toggle .i-sun { display: block; }
+    [data-theme="dark"] .theme-toggle .i-moon { display: none; }
+    [data-theme="light"] .theme-toggle .i-sun { display: none; }
+    [data-theme="light"] .theme-toggle .i-moon { display: block; }
+
+    /* ===== 히어로 (1화면, 키네틱 타이포) ===== */
+    .hero { position: relative; min-height: 100vh; display: flex; align-items: center; padding: 60px var(--gutter) 0; overflow: hidden; }
+    .hero__inner { width: 100%; max-width: var(--container); margin-inline: auto; }
+    .hero__eyebrow { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: clamp(1.25rem,3vw,2rem); opacity: 0; transform: translateY(12px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .hero__title { font-weight: 800; font-size: clamp(2.6rem,9.5vw,8.5rem); line-height: 0.98; letter-spacing: -0.035em; color: var(--page-fg); }
+    .hero__title .line { display: block; overflow: hidden; }
+    .hero__title .line > span { display: block; transform: translateY(110%); transition: transform 1s cubic-bezier(.22,1,.36,1); }
+    .hero__title .accent { font-weight: 300; font-style: italic; opacity: .5; }
+    .hero__sub { margin-top: clamp(1.5rem,3vw,2.5rem); max-width: 46ch; font-size: var(--fs-lead); line-height: 1.7; color: var(--muted); opacity: 0; transform: translateY(12px); transition: opacity .7s var(--ease) .15s, transform .7s var(--ease) .15s; }
+    .hero__cue { position: absolute; left: var(--gutter); bottom: clamp(1.5rem,4vw,2.5rem); display: inline-flex; align-items: center; gap: 10px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); opacity: 0; transition: opacity .7s var(--ease) .6s; }
+    .hero__cue i { width: 1px; height: 24px; background: currentColor; opacity: .5; animation: cue 1.8s ease-in-out infinite; transform-origin: top; }
+    @keyframes cue { 0%,100%{transform:scaleY(.4);opacity:.2} 50%{transform:scaleY(1);opacity:.6} }
+    .hero.is-in .hero__eyebrow, .hero.is-in .hero__sub { opacity: 1; transform: none; }
+    .hero.is-in .hero__title .line > span { transform: none; }
+    .hero.is-in .hero__cue { opacity: 1; }
+    .hero.is-in .hero__title .line:nth-child(1) > span { transition-delay: .05s; }
+    .hero.is-in .hero__title .line:nth-child(2) > span { transition-delay: .15s; }
+    .hero.is-in .hero__title .line:nth-child(3) > span { transition-delay: .25s; }
+
+    /* ===== 허브(단일 화면) ===== */
+    .hub { position: relative; min-height: 100vh; padding: 66px var(--gutter) 26px; display: flex; flex-direction: column; --bento-top: 132px; --ghost-top: 84px; overflow-x: clip; }
+    /* 미술관 벽 — 은은한 그레인 텍스처 (vexoo 플랫과 차별) */
+    .hub::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .09;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px; }
+    [data-theme="light"] .hub::before { opacity: .06; }   /* 라이트 배경에선 살짝 약하게 */
+    /* 재진입(BACK·새로고침) 시: 캐스케이드 없이 허브 전체가 잔잔히 페이드 인 */
+    /* 재진입: 카드 캐스케이드만 끔(스냅). 허브 opacity 애니메이션 ❌ — backdrop-filter 깨짐 방지.
+       부드러운 전환은 cine 오버레이 페이드아웃이 담당(별도 레이어라 blur 영향 없음). */
+    .hub.is-reentry .card, .hub.is-reentry .ghost { transition: none !important; }
+    .hub__bar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; font-size: 0.85rem; }
+    .hub__bar .l { display: flex; gap: 24px; align-items: baseline; }
+    .hub__bar .name { font-weight: 800; }
+    .hub__bar .role, .hub__bar .meta { color: var(--muted); }
+    .hub__bar .meta { display: flex; align-items: center; gap: 14px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #3ad07a; box-shadow: 0 0 0 4px rgba(58,208,122,0.15); }
+
+    /* 거대 이름 — 카드 위로 삐져나오고 아랫부분은 글래스에 프로스트 */
+    .ghost { position: absolute; top: var(--ghost-top, 84px); left: 0; right: 0; z-index: 0; text-align: center; pointer-events: none;
+      opacity: 0; transform: scale(1.14); transition: opacity 1.1s var(--ease) .5s, transform 1.3s cubic-bezier(.16,1,.3,1) .5s; }
+    .ghost.is-in { opacity: 1; transform: scale(1); }   /* 마지막에 또렷이 맺힘(클라이맥스) */
+    .ghost span { display: inline-block; font-weight: 800; letter-spacing: -0.04em; line-height: 0.8;
+      font-size: clamp(5rem, 20vw, 21rem);
+      background: linear-gradient(180deg, var(--ghost-a), var(--ghost-b)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      opacity: var(--ghost-op); filter: drop-shadow(0 0 22px var(--ghost-glow)); will-change: transform, opacity; }
+    /* hover 시 거대 이름 전환 모션 (새 단어가 슥 올라오며 페이드) */
+    .ghost span { transform-origin: 50% 100%; transition: opacity .24s ease, transform .32s cubic-bezier(.22,1,.36,1), filter .45s ease; }
+    .ghost span.is-fading { opacity: 0; transform: translateY(14px); }   /* 페이드아웃→인 크로스 (딱 끊김 방지) */
+
+    /* 벤토 — 이름 윗부분이 보이도록 margin-top으로 아래로 내림 */
+    .bento { position: relative; z-index: 1; flex: 1;
+      margin-top: var(--bento-top, 188px);
+      display: grid; grid-template-columns: repeat(4,1fr); grid-auto-rows: minmax(104px, 1fr); gap: 14px;
+      grid-template-areas:
+        "about   about   resume  badge"
+        "contact stack   resume  badge"
+        "ode     ode     ssang   sled"
+        "ode     ode     notalk  sled"; }
+    .c-ode{grid-area:ode}.c-ssang{grid-area:ssang}.c-sled{grid-area:sled}.c-notalk{grid-area:notalk}.c-badge{grid-area:badge}.c-about{grid-area:about}.c-resume{grid-area:resume}.c-contact{grid-area:contact}.c-stack{grid-area:stack}
+    .bento > * { min-width: 0; }   /* 그리드 아이템이 컨테이너를 넘지 않게 */
+
+    .card { position: relative; overflow: hidden; border-radius: 18px; background: var(--card-bg); backdrop-filter: blur(15px) saturate(125%); -webkit-backdrop-filter: blur(15px) saturate(125%); border: 1px solid var(--card-border); padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; text-decoration: none; color: inherit; transition: transform .7s cubic-bezier(.16,1,.3,1), border-color .35s, box-shadow .35s, background .35s, opacity .55s ease; opacity: 0; transform: translateY(48px) scale(.92); }
+    .bento.is-in .card { opacity: 1; transform: none; }
+    /* 블랙에서 카드가 순차로 쏟아져 조립됨 (페이오프) */
+    .bento.is-in .card:nth-child(1){transition-delay:.04s}.bento.is-in .card:nth-child(2){transition-delay:.12s}.bento.is-in .card:nth-child(3){transition-delay:.20s}.bento.is-in .card:nth-child(4){transition-delay:.28s}.bento.is-in .card:nth-child(5){transition-delay:.36s}.bento.is-in .card:nth-child(6){transition-delay:.44s}.bento.is-in .card:nth-child(7){transition-delay:.52s}.bento.is-in .card:nth-child(8){transition-delay:.60s}.bento.is-in .card:nth-child(9){transition-delay:.68s}
+
+    .card[data-mood]:hover { border-color: var(--mood); box-shadow: 0 0 0 1px var(--mood), 0 18px 50px -12px var(--mood); background: color-mix(in srgb, var(--mood) 18%, var(--card-bg)); }
+    .card[href]:hover { transform: translateY(-3px); }
+    .card__num { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; color: var(--muted); }
+    .card[data-mood]:hover .card__num { color: var(--mood); }
+    .card__title { font-size: clamp(1.05rem,1.5vw,1.5rem); font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+    .card__sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .card__arrow {
+      position: absolute; bottom: 16px; right: 16px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: transparent;
+      border: 2px solid rgba(255,255,255,0.35);
+      overflow: hidden;
+      color: #fff; opacity: 0;
+      transform: scale(0.7);
+      transition: opacity .3s cubic-bezier(.22,1,.36,1), transform .35s cubic-bezier(.22,1,.36,1), border-color .25s;
+    }
+    .card__arrow .arrow-out,
+    .card__arrow .arrow-in {
+      position: absolute;
+      width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: top .32s cubic-bezier(.22,1,.36,1), left .32s cubic-bezier(.22,1,.36,1), right .32s cubic-bezier(.22,1,.36,1), bottom .32s cubic-bezier(.22,1,.36,1);
+    }
+    .card__arrow .arrow-out { top: calc(50% - 8px); left: calc(50% - 8px); }
+    .card__arrow .arrow-in  { bottom: -20px; left: -20px; }
+    .card__arrow svg { width: 14px; height: 14px; }
+    .card[href]:hover .card__arrow,
+    .card[onclick]:hover .card__arrow,
+    .card:hover .card__arrow { opacity: 1; transform: scale(1); }
+    .card[href]:hover .card__arrow .arrow-out,
+    .card[onclick]:hover .card__arrow .arrow-out,
+    .card:hover .card__arrow .arrow-out { top: -20px; left: auto; right: -20px; }
+    .card[href]:hover .card__arrow .arrow-in,
+    .card[onclick]:hover .card__arrow .arrow-in,
+    .card:hover .card__arrow .arrow-in { bottom: auto; left: calc(50% - 8px); top: calc(50% - 8px); }
+    [data-theme="light"] .card__arrow { border-color: rgba(0,0,0,0.35); color: #111; }
+    .card__head { position: absolute; inset: 0; z-index: -1; }
+    .card__head img { width: 100%; height: 100%; object-fit: cover; opacity: .72; transition: opacity .4s, transform .6s; }
+    .card[href]:hover .card__head img { opacity: .92; transform: scale(1.05); }
+    .card__head::after { content:''; position:absolute; inset:0; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.45) 100%); }
+    [data-theme="light"] .card__head::after { background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.25) 100%); }
+    [data-theme="light"] .card__head img { opacity: .85; }
+    [data-theme="light"] .card[href]:hover .card__head img { opacity: 1; }
+    .soon { display:inline-block; margin-top:6px; font-size:.6rem; font-weight:700; letter-spacing:.14em; color:var(--muted); border:1px solid var(--chip-border); border-radius:999px; padding:3px 8px; align-self:flex-start; }
+    .card--text { justify-content: space-between; }
+    .card__label { font-size:.72rem; font-weight:700; letter-spacing:.16em; color:var(--muted); }
+    .about__line { font-size:.92rem; line-height:1.55; }
+    .stack__items { display:flex; flex-wrap:wrap; gap:6px; }
+    .stack__items span { font-size:.68rem; border:1px solid var(--chip-border); border-radius:999px; padding:4px 9px; }
+    .contact__email { font-size: clamp(.95rem,1.3vw,1.35rem); font-weight:800; letter-spacing:-0.01em; overflow-wrap:anywhere; }
+
+    .c-badge { overflow:hidden; }
+    .banner-preview { position:absolute; inset:0; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; padding:20px; box-sizing:border-box; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); overflow:hidden; }
+    .banner-preview__strips { display:flex; flex-direction:column; gap:6px; width:100%; }
+    .banner-preview__strip { border-radius:4px; height:16px; flex-shrink:0; }
+    .banner-preview__strip:nth-child(1) { background: linear-gradient(90deg,#e94560,#f5a623); width:100%; }
+    .banner-preview__strip:nth-child(2) { background: linear-gradient(90deg,#f5a623,#0f3460); width:78%; }
+    .banner-preview__strip:nth-child(3) { background: linear-gradient(90deg,#5b8def,#e94560); width:55%; }
+
+    @media (max-width: 860px) {
+      .hub { --bento-top: 150px; --ghost-top: 80px; }
+      .bento { grid-template-columns: repeat(2,1fr); grid-auto-rows: 130px;
+        grid-template-areas: "about about" "resume contact" "stack badge" "ode ode" "ode ode" "ssang sled" "notalk notalk"; }
+      .hd-nav { display:none; }
+    }
+    /* ===== 시네마틱 인트로 (오토 오버레이) — 끝나며 그 자리에서 허브가 드러남 ===== */
+    .cine { position: fixed; inset: 0; z-index: 200; overflow: hidden; background: #060607; transition: opacity .65s ease, visibility .65s;
+      --g1: rgba(255,255,255,0.92); --g2: rgba(207,210,218,0.80); --g3: rgba(138,143,154,0.62); }   /* 기본: 모노 글로우 */
+    .cine.out { opacity: 0; visibility: hidden; pointer-events: none; }
+    .cine__grad { position: absolute; inset: 0; pointer-events: none; }
+    /* 오로라 글로우 — 헤비 블러 + screen 블렌드로 밴딩 제거. bloom 클래스로 등장 */
+    .cine__grad::before {
+      content: ''; position: absolute; left: 50%; bottom: -25%;
+      width: 175vmax; height: 130vmax;
+      transform: translateX(-50%) scale(0.5) translateY(8%);
+      background:
+        radial-gradient(45% 45% at 50% 62%, var(--g1) 0%, transparent 70%),
+        radial-gradient(60% 55% at 50% 78%, var(--g2) 0%, transparent 72%),
+        radial-gradient(70% 60% at 50% 50%, var(--g3) 0%, transparent 75%);
+      opacity: 0; filter: blur(64px); mix-blend-mode: screen;
+    }
+    .cine.bloom .cine__grad::before { animation: cineBloom 1.7s cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes cineBloom {
+      0%   { opacity: 0;   transform: translateX(-50%) scale(0.5) translateY(8%); }
+      55%  { opacity: .95; }
+      100% { opacity: .9;  transform: translateX(-50%) scale(1.18) translateY(-5%); }
+    }
+    /* 블랙이 하단 중앙에서 원형으로 차오름 (평평한 시트 ❌) */
+    .cine__grad::after {
+      content: ''; position: absolute; left: 50%; bottom: 0;
+      width: 135vmax; height: 135vmax; transform: translate(-50%, 44%) scale(0); border-radius: 50%;
+      background: radial-gradient(circle, #060607 60%, rgba(6,6,7,0) 74%);
+    }
+    .cine.toblack .cine__grad::after { animation: cineBlack 1.2s cubic-bezier(.5,0,.3,1) forwards; }
+    @keyframes cineBlack { to { transform: translate(-50%, 44%) scale(2.7); } }
+    .cine__intro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5rem; text-align: center; z-index: 2; transition: opacity .6s ease; }
+    .cine.toblack .cine__intro { opacity: 0; }
+    .cine__title { position: relative; height: 1.15em; width: 100%; font-weight: 800; font-size: clamp(2.2rem, 8vw, 7rem); letter-spacing: -0.03em; color: #fff; }
+    .cine__line { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .cine__line > span { display: block; transform: translateY(115%); transition: transform .85s cubic-bezier(.22,1,.36,1); will-change: transform; }
+    .cine__line.in > span { transform: translateY(0); }
+    .cine__line.out > span { transform: translateY(-115%); }
+    .cine__cue { display: inline-flex; align-items: center; gap: 10px; font-size: .72rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.6); opacity: 0; transition: opacity .6s ease; }
+    .cine__cue.show { opacity: 1; }
+    .cine__cue i { width: 1px; height: 22px; background: currentColor; opacity: .5; animation: cue 1.8s ease-in-out infinite; transform-origin: top; }
+
+    /* ── FULL PANEL OVERLAY ── */
+    .fp-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.55); opacity: 0; pointer-events: none;
+      transition: opacity .4s ease;
+    }
+    .fp-overlay.open { opacity: 1; pointer-events: all; }
+    .fp-panel {
+      position: fixed; inset: 0; z-index: 501;
+      border-radius: 0;
+      background: var(--page-bg);
+      transform: translateY(100%);
+      transition: transform .5s cubic-bezier(.76,0,.24,1);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .fp-panel.open { transform: translateY(0); }
+    .fp-close-btn {
+      position: absolute; top: 20px; right: 20px; z-index: 10;
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      color: var(--page-fg); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .3s cubic-bezier(.22,1,.36,1), border-color .25s, background .25s;
+    }
+    .fp-close-btn:hover { transform: rotate(90deg); border-color: var(--muted); }
+    .fp-close-btn svg { width: 15px; height: 15px; }
+    .fp-panel__body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card,.ghost,.hero__eyebrow,.hero__sub,.hero__title .line>span,.hero__cue { opacity:1 !important; transform:none !important; transition:none !important; }
+      .hero__cue i { animation:none; }
+      .cine { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <span class="hd-brand"><span class="hd-logo" id="hdLogo"></span><span class="hd-cursor" id="hdCursor" aria-hidden="true">_</span></span>
+    <div class="hd-right">
+      <nav class="hd-nav">
+        <a href="#hub"><span class="nav-link-inner"><span>Work</span><span aria-hidden="true">Work</span></span></a>
+        <a href="about.html"><span class="nav-link-inner"><span>About</span><span aria-hidden="true">About</span></span></a>
+        <a href="mailto:itsmauvely@gmail.com"><span class="nav-link-inner"><span>Contact</span><span aria-hidden="true">Contact</span></span></a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="테마 전환">
+        <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 시네마틱 인트로 오버레이 (키네틱 텍스트 → 그라데이션 → 블랙 → 걷히며 허브 등장) -->
+  <div class="cine" id="cine">
+    <div class="cine__grad" id="cineGrad"></div>
+    <div class="cine__intro" id="cineIntro">
+      <h1 class="cine__title">
+        <span class="cine__line"><span>문제를 정의하고</span></span>
+        <span class="cine__line"><span>경험을 설계하고</span></span>
+        <span class="cine__line"><span>코드로 완성합니다</span></span>
+      </h1>
+    </div>
+  </div>
+
+
+  <!-- 벤토 허브 (단일 화면) -->
+  <section class="hub" id="hub">
+    <div class="hub__bar">
+      <div class="l"><span class="name">장수빈</span><span class="role">UX/UI Designer &amp; Publisher</span></div>
+    </div>
+
+    <!-- 거대 이름: 카드 위로 삐져나오고 아랫부분 프로스트 -->
+    <div class="ghost" id="ghost"><span>SOOBIN</span></div>
+
+    <div class="bento" id="bento">
+      <a class="card c-ode" href="work/ode.html" data-mood="#8D775F" style="--mood:#8D775F">
+        <div class="card__head"><img src="assets/images/ode/ode-hero.jpg" alt=""></div>
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__num">01 / BRANDING</span><span class="card__title">ODE</span><span class="card__sub">뷰티 브랜딩 · UX/UI · Publishing</span>
+      </a>
+      <div class="card c-ssang" data-mood="#8b5cf6" style="--mood:#8b5cf6">
+        <div class="card__arrow card__arrow--soon"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__num">02 / REDESIGN</span><span class="card__title">상상의문</span><span class="soon">COMING SOON</span>
+      </div>
+      <a class="card c-sled" href="work/sledding.html" data-mood="#7fb5e6" style="--mood:#7fb5e6">
+        <div class="card__head"><img src="assets/images/sledding/sledding-thumb.jpg" alt=""></div>
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__num">03 / INTERACTION</span><span class="card__title">Sledding</span>
+      </a>
+      <div class="card c-badge" data-mood="#e94560" style="--mood:#e94560">
+        <div class="card__arrow card__arrow--soon"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__num">05 / GRAPHIC</span><span class="card__title">Banner Design</span><span class="soon">COMING SOON</span>
+      </div>
+      <a class="card c-notalk" href="work/notalk.html" data-mood="#2dd4bf" style="--mood:#2dd4bf">
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__num">04 / APP</span><span class="card__title">노톡</span>
+      </a>
+      <div class="card c-about card--text" onclick="openPanel('about')" style="cursor:pointer">
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__label">ABOUT</span>
+        <p class="about__line">이커머스 MD·해외영업에서 출발해, 사용자 경험을 직접 설계하고 코드로 구현하는 디자이너.</p>
+      </div>
+      <div class="card c-resume card--text" onclick="openPanel('resume')" style="cursor:pointer">
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__label">RESUME</span><span class="card__title">이력서<br>보기</span>
+      </div>
+      <a class="card c-contact card--text" href="mailto:itsmauvely@gmail.com">
+        <div class="card__arrow"><span class="arrow-out"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="arrow-in"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <span class="card__label">CONTACT</span><span class="contact__email">itsmauvely@gmail.com</span>
+      </a>
+      <div class="card c-stack card--text">
+        <span class="card__label">STACK</span>
+        <div class="stack__items"><span>Figma</span><span>Photoshop</span><span>Illustrator</span><span>HTML/CSS</span><span>JavaScript</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FULL PANEL OVERLAY -->
+  <div class="fp-overlay" id="fpOverlay" onclick="closePanel()"></div>
+
+  <!-- ABOUT PANEL -->
+  <div class="fp-panel" id="fp-about">
+    <button class="fp-close-btn" onclick="closePanel()" aria-label="닫기">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="fp-panel__body">
+      <iframe src="about.html" style="width:100%;flex:1;border:none;display:block;" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <!-- RESUME PANEL -->
+  <div class="fp-panel" id="fp-resume">
+    <button class="fp-close-btn" onclick="closePanel()" aria-label="닫기">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="fp-panel__body" style="padding: 80px max(32px,5vw) 60px">
+      <p style="font-size:.72rem;font-weight:700;letter-spacing:.18em;color:var(--muted);margin-bottom:16px">RESUME</p>
+      <p style="font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-.02em;color:var(--page-fg);margin-bottom:40px">이력서</p>
+      <p style="font-size:.95rem;color:var(--muted);margin-bottom:32px;line-height:1.7">이력서 PDF가 준비되면 여기에 표시됩니다.<br>현재는 이메일로 요청해주세요.</p>
+      <a href="mailto:itsmauvely@gmail.com" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:999px;border:1px solid var(--card-border);color:var(--page-fg);text-decoration:none;font-size:.85rem;font-weight:700;letter-spacing:.1em;transition:background .2s" onmouseover="this.style.background='var(--card-bg)'" onmouseout="this.style.background='transparent'">
+        이메일로 요청하기
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 12L12 4M12 4H5M12 4V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    var root = document.documentElement;
+    var saved = localStorage.getItem('theme');
+    root.setAttribute('data-theme', saved || 'dark');
+    document.getElementById('themeToggle').addEventListener('click', function(){
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next); localStorage.setItem('theme', next);
+    });
+
+    function revealHub(){
+      document.getElementById('ghost').classList.add('is-in');
+      document.getElementById('bento').classList.add('is-in');
+      typeLogo();
+    }
+    // 좌측 로고 타이핑 (구 포트폴리오와 동일: 타이핑→정지→삭제→반복)
+    function typeLogo(){
+      var el = document.getElementById('hdLogo'); if (!el || el.dataset.typed) return; el.dataset.typed = '1';
+      var text = 'SOOBIN PORTFOLIO';
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = text; return; }
+      el.textContent = '';
+      var TYPE_SPEED = 110, DELETE_SPEED = 55, HOLD_FULL = 1800, HOLD_EMPTY = 600;
+      var i = 0, deleting = false;
+      function step(){
+        if (!deleting) {
+          if (i < text.length) { i++; el.textContent = text.slice(0, i); setTimeout(step, TYPE_SPEED); }
+          else { deleting = true; setTimeout(step, HOLD_FULL); }
+        } else {
+          if (i > 0) { i--; el.textContent = text.slice(0, i); setTimeout(step, DELETE_SPEED); }
+          else { deleting = false; setTimeout(step, HOLD_EMPTY); }
+        }
+      }
+      step();
+    }
+
+    /* ── FULL PANEL ── */
+    function openPanel(type) {
+      document.getElementById('fpOverlay').classList.add('open');
+      document.getElementById('fp-' + type).classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePanel() {
+      document.getElementById('fpOverlay').classList.remove('open');
+      document.querySelectorAll('.fp-panel').forEach(function(p){ p.classList.remove('open'); });
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closePanel(); });
+
+
+    /* ===== 카드 hover → 거대 이름이 그 카드 타이틀로 바뀜 (vexoo식) ===== */
+    (function(){
+      var gs = document.querySelector('.ghost span');
+      var bento = document.getElementById('bento');
+      if (!gs || !bento) return;
+      var DEFAULT = 'SOOBIN';
+      var MAP = { 'c-ode':'ODE','c-ssang':'상상의문','c-sled':'Sledding','c-notalk':'노톡','c-about':'About','c-resume':'Resume','c-contact':'Contact','c-badge':'BANNER' };
+      // 거대 이름: 텍스트만 교체 (색은 기본 흰색 그대로 — 타이틀 색 ❌)
+      function setGhost(t){
+        if (gs.textContent === t) return;
+        gs.classList.add('is-fading');             // 기존 텍스트 페이드아웃
+        clearTimeout(gs._swapT);
+        gs._swapT = setTimeout(function(){
+          gs.textContent = t;
+          gs.classList.remove('is-fading');        // 새 텍스트 페이드인
+        }, 230);
+      }
+      // 디바운스: 카드에 잠깐(180ms) 머물러야 바뀜 → 스쳐 지나갈 땐 안 바뀜(획획 방지)
+      var pending;
+      function queueGhost(t){ clearTimeout(pending); pending = setTimeout(function(){ setGhost(t); }, 180); }
+      Array.prototype.forEach.call(bento.querySelectorAll('.card'), function(card){
+        var label = null;
+        for (var k in MAP) { if (card.classList.contains(k)) { label = MAP[k]; break; } }
+        if (!label) return;
+        card.addEventListener('mouseenter', function(){ queueGhost(label); });
+      });
+      bento.addEventListener('mouseleave', function(){ queueGhost(DEFAULT); });
+    })();
+
+    /* ===== 시네마틱 인트로 (오토): 키네틱 텍스트 → 그라데이션 → 블랙 → 걷히며 허브 조립 등장 ===== */
+    (function(){
+      var cine = document.getElementById('cine');
+      var lines = cine ? Array.prototype.slice.call(cine.querySelectorAll('.cine__line')) : [];
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      // BACK·새로고침 등 재진입이면 인트로 건너뛰고 허브 바로 (세션 첫 진입에만 재생)
+      var seen = false; try { seen = !!sessionStorage.getItem('introSeen'); } catch (e) {}
+      if (!cine || reduce || seen) {
+        revealHub();
+        var hubEl = document.getElementById('hub');
+        if (hubEl) hubEl.classList.add('is-reentry');   // 카드 캐스케이드 끔(스냅)
+        if (cine && seen && !reduce) {
+          // cine를 솔리드 커버로 만들어 페이드아웃 → 허브 드러남 (허브 opacity 안 건드림)
+          var th; try { th = localStorage.getItem('theme'); } catch (e) {}
+          cine.style.background = (th === 'light') ? '#eceae6' : '#0a0a0b';
+          var ci = cine.querySelector('.cine__intro'); if (ci) ci.style.display = 'none';
+          var cg = cine.querySelector('.cine__grad'); if (cg) cg.style.display = 'none';
+          requestAnimationFrame(function(){ cine.classList.add('out'); });
+          setTimeout(function(){ if (cine) cine.style.display = 'none'; }, 720);
+        } else if (cine) {
+          cine.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+        return;
+      }
+      try { sessionStorage.setItem('introSeen', '1'); } catch (e) {}
+
+      var timers = [], busy = false;
+      function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+      function T(fn, ms){ timers.push(setTimeout(fn, ms)); }
+
+      function play(){
+        clearTimers(); busy = true;
+        // 리셋
+        cine.classList.remove('out','bloom','toblack');
+        cine.style.opacity=''; cine.style.visibility='';
+        lines.forEach(function(l){ l.classList.remove('in','out'); });
+        document.body.style.overflow = 'hidden';
+
+        var i = 0, HOLD = 600, last = lines.length - 1;
+        function step(){
+          if (i > 0) { lines[i-1].classList.remove('in'); lines[i-1].classList.add('out'); }
+          if (i <= last) {
+            lines[i].classList.add('in'); i++;
+            if (i <= last) T(step, HOLD);
+            else T(function(){ cine.classList.add('bloom'); T(finish, 850); }, HOLD);
+          }
+        }
+        function finish(){
+          cine.classList.add('bloom'); cine.classList.add('toblack');
+          // 블랙이 차오른 뒤 오버레이 걷힘 + 그 위로 허브가 조립되며 등장
+          T(function(){ revealHub(); cine.classList.add('out'); document.body.style.overflow=''; busy=false; }, 950);
+        }
+        T(step, 250);
+      }
+
+      // 스킵 (스크롤/터치/키 입력 시 인트로 건너뜀)
+      ['wheel','touchstart','keydown'].forEach(function(ev){
+        window.addEventListener(ev, function(){ if (busy) { clearTimers(); revealHub(); cine.classList.add('out'); document.body.style.overflow=''; busy=false; } }, { passive: true });
+      });
+
+      play();
+    })();
+  </script>
+</body>
+</html>

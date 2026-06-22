@@ -1,0 +1,14 @@
+/* theme: sledding — 인디 게임 / 플레이풀·겨울·따뜻·귀여움
+   팔레트: 스노우 블루 + 포인트 / 헤드라인: 라운드 산세리프 */
+@import url("https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&display=swap");
+
+:root {
+  --bg:     #eef5fb;   /* Snow Blue — 밝은 배경 */
+  --surface:#dcebf7;
+  --fg:     #1f3550;   /* 딥 블루 텍스트 */
+  --muted:  rgba(31, 53, 80, 0.62);
+  --line:   rgba(31, 53, 80, 0.16);
+  --accent: #ff8a4c;   /* 따뜻한 포인트(노을/썰매) */
+
+  --font-head: "Jua", "Gaegu", system-ui, sans-serif;
+}

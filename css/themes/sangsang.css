@@ -1,0 +1,16 @@
+/* theme: 상상의문 — 방탈출 리디자인 / 다크·미스터리·몰입
+   팔레트: 딥 다크 + 네온/앰버 포인트 / 헤드라인: 무게감 디스플레이 */
+@import url("https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Cinzel:wght@600;700&display=swap");
+
+:root {
+  --bg:     #121116;   /* 딥 다크 */
+  --surface:#1c1b22;
+  --fg:     #ece8e1;   /* 밝은 텍스트 */
+  --muted:  rgba(236, 232, 225, 0.6);
+  --line:   rgba(236, 232, 225, 0.14);
+  --accent: #e6a23c;   /* 앰버 네온 포인트 */
+
+  --font-head: "Black Han Sans", "Cinzel", serif;
+}
+
+/* 다크 테마: 커버 텍스트가 이미 밝으므로 별도 보정 불필요 */

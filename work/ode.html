@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="ko" style="background:#2b3133">
+<head>
+  <!-- 페인트 전 즉시 실행 — 흰 화면 플래시 방지 -->
+  <script>document.documentElement.style.opacity='0'</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>ODE — SOOBIN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Gowun+Batang:wght@400;700&family=Jost:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #2b3133;
+      --text: #ffffff;
+      --font: 'Jost', sans-serif;
+    }
+
+    .char { display: inline-block; will-change: transform; }
+    .word { display: inline-block; will-change: transform; }
+
+    html {
+      overflow-x: hidden;
+    }
+
+    html, body {
+      background-color: #2b3133;
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100dvh;
+    }
+
+    /* Bidaya gradient — 상단 고정, 스크롤 시 올라감 */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 100vh;
+      background: linear-gradient(180deg, #fafafa 0%, rgba(250,250,250,0.19) 18.78%, #2b3133 30.85%, #2b3133 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Bidaya 노이즈 텍스처 */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.13;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    .detail-header,
+    .detail-wrap {
+      position: relative;
+      z-index: 3;
+    }
+
+    /* Header */
+    .detail-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 48px;
+    }
+
+    .detail-header a {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .detail-nav {
+      display: flex;
+      gap: 40px;
+    }
+
+    .detail-nav a {
+      display: inline-block;
+      overflow: hidden;
+      height: 1.4em;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text);
+      text-decoration: none;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .detail-nav a:hover { opacity: 1; }
+
+    .nav-link-inner {
+      position: relative;
+      display: inline-block;
+    }
+
+    .nav-link-inner span {
+      display: block;
+      line-height: 1.4em;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-link-inner span:first-child {
+      position: relative;
+      transform: translateY(0%);
+    }
+
+    .nav-link-inner span:last-child {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%;
+      transform: translateY(100%);
+    }
+
+    .detail-nav a:hover .nav-link-inner span:first-child { transform: translateY(-100%); }
+    .detail-nav a:hover .nav-link-inner span:last-child  { transform: translateY(0%); }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--text);
+      text-decoration: none;
+      transition: opacity 0.2s, gap 0.25s;
+    }
+    .back-btn:hover { opacity: 0.5; gap: 14px; }
+    .back-btn svg { flex-shrink: 0; transition: transform 0.25s; }
+    .back-btn:hover svg { transform: translateX(-3px); }
+
+    /* ── 히어로: 영상 풀블리드 ── */
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hero video,
+    .hero > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%);
+      pointer-events: none;
+    }
+
+    .hero-text {
+      position: absolute;
+      bottom: 52px;
+      left: 52px;
+      z-index: 2;
+    }
+
+    .detail-category {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      opacity: 0.7;
+      margin-bottom: 16px;
+      color: #fff;
+    }
+
+    .detail-title {
+      font-size: clamp(52px, 8vw, 96px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .detail-tagline {
+      font-size: 16px;
+      font-weight: 400;
+      opacity: 0.65;
+      color: #fff;
+    }
+
+    /* ── 표지 섹션: 이미지 풀블리드 + 텍스트 오버레이 ── */
+    .cover {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .cover__bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    .cover__text {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      padding: 80px 56px 72px 80px;
+      max-width: 56%;
+    }
+
+    .cover__top { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+    .cover__logo {
+      width: clamp(110px, 11vw, 190px);
+      height: auto;
+      display: block;
+      margin-bottom: 40px;
+      filter: brightness(0) saturate(100%);
+    }
+
+    .cover__sub {
+      font-size: clamp(40px, 6vw, 104px);
+      font-weight: 400;
+      line-height: 1.25;
+      color: #2a2118;
+      margin-bottom: 36px;
+      font-family: 'Gowun Batang', serif;
+    }
+
+    .cover__type {
+      font-size: clamp(16px, 1.1vw, 18px);
+      font-weight: 400;
+      color: rgba(42,33,24,0.74);
+      margin-bottom: 48px;
+      letter-spacing: 0.03em;
+    }
+
+    .cover__desc {
+      font-size: clamp(18px, 1.7vw, 27px);
+      font-weight: 400;
+      line-height: 1.9;
+      color: rgba(42,33,24,0.78);
+      font-family: 'Gowun Batang', serif;
+    }
+
+    .cover__meta {
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      padding-top: 44px;
+      border-top: 1px solid rgba(42,33,24,0.15);
+      max-width: 620px;          /* 구분선이 모델에 닿지 않도록 길이 축소 */
+    }
+
+    .cover__meta-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      align-items: baseline;
+    }
+
+    .cover__meta-key {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: rgba(42,33,24,0.5);
+    }
+
+    .cover__meta-val {
+      font-size: 16px;
+      font-weight: 400;
+      color: rgba(42,33,24,0.78);
+    }
+
+
+    @media (max-width: 768px) {
+      .detail-header { padding: 20px 24px; }
+      .hero-text { left: 24px; bottom: 36px; }
+      .cover__text { max-width: 100%; padding: 80px 24px 48px; }
+    }
+  </style>
+</head>
+<body style="background:#2b3133">
+
+  <!-- 고정 프로젝트 레일 (모든 케이스 공통 · 자체 스타일) -->
+  <style>
+    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(18,18,20,0.5);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(255,255,255,0.12);font-family:'Jost',system-ui,sans-serif;}
+    .pf-rail a,.pf-rail span{color:#fff;text-decoration:none;}
+    .pf-rail__home{font-weight:800;letter-spacing:.1em;font-size:15px;display:inline-flex;gap:7px;align-items:center;flex-shrink:0;transition:gap .25s;}
+    .pf-rail__home:hover{gap:11px;}
+    .pf-rail__tabs{display:flex;gap:4px;margin:0 auto;overflow-x:auto;scrollbar-width:none;}
+    .pf-rail__tabs::-webkit-scrollbar{display:none;}
+    .pf-rail__tab{white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;padding:7px 13px;border-radius:999px;opacity:.55;transition:opacity .25s,background .25s;}
+    .pf-rail__tab:hover{opacity:1;}
+    .pf-rail__tab--active{opacity:1;background:rgba(255,255,255,.16);}
+    .pf-rail__tab--soon{opacity:.3;pointer-events:none;}
+    .pf-rail__live{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.04em;padding:9px 16px;border-radius:999px;background:#fff;color:#15151a!important;transition:transform .2s;}
+    .pf-rail__live:hover{transform:translateY(-2px);}
+    .pf-rail__live::before{content:'▶';font-size:.7em;}
+    .pf-rail__live span{color:inherit;}   /* 버튼 글자색이 버튼색을 따르게 (흰버튼 위 흰글자 방지) */
+    @media(max-width:720px){.pf-rail__live span{display:none;}.pf-rail__live{padding:9px 12px;}}
+  </style>
+  <nav class="pf-rail">
+    <a class="pf-rail__home" href="../index.html">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      BACK
+    </a>
+    <div class="pf-rail__tabs">
+      <a class="pf-rail__tab pf-rail__tab--active" href="ode.html">ODE</a>
+      <span class="pf-rail__tab pf-rail__tab--soon">상상의문</span>
+      <a class="pf-rail__tab" href="sledding.html">Sledding</a>
+      <a class="pf-rail__tab" href="notalk.html">노톡</a>
+    </div>
+  </nav>
+
+  <!-- 히어로: 영상 풀블리드 -->
+  <div class="hero">
+    <img src="../assets/images/ode/ode-hero.jpg" alt="ODE">  <!-- 영상 → 정지 키비주얼 (PLAN 규칙) -->
+    <div class="hero-text">
+      <p class="detail-category">UX/UI DESIGN · CONCEPT DESIGN</p>
+      <h1 class="detail-title">ODE</h1>
+      <p class="detail-tagline">뷰티 브랜드 — UX/UI 디자인 · 브랜딩 · 웹퍼블리싱</p>
+    </div>
+  </div>
+
+  <!-- 표지: 이미지 풀블리드 + 텍스트 오버레이 -->
+  <div class="cover">
+    <img class="cover__bg" src="../assets/images/ode/ode-hero.jpg" alt="ODE">
+    <div class="cover__text">
+      <div class="cover__top">
+        <img class="cover__logo" src="../assets/images/ode-images/ode-logo.png" alt="ODE">
+        <p class="cover__sub">매일을 위한<br>포켓 뷰티</p>
+        <p class="cover__type">개인 프로젝트 &nbsp;|&nbsp; 기획, 디자인 100%</p>
+        <p class="cover__desc">매일 손이 가고, 가방에 넣고 다니고 싶은<br>포켓 뷰티 브랜드 ODE를 기획했습니다.</p>
+      </div>
+      <div class="cover__meta">
+        <div class="cover__meta-row">
+          <span class="cover__meta-key">PERIOD</span>
+          <span class="cover__meta-val">8 Days</span>
+        </div>
+        <div class="cover__meta-row">
+          <span class="cover__meta-key">TOOLS</span>
+          <span class="cover__meta-val">Figma · Photoshop · AI</span>
+        </div>
+        <div class="cover__meta-row">
+          <span class="cover__meta-key">SCOPE OF WORK</span>
+          <span class="cover__meta-val">Brand Strategy · UX/UI Design · Publishing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROCESS ── -->
+
+  <!-- 01 PROJECT OVERVIEW -->
+  <section class="po">
+    <div class="po__left">
+      <span class="po__label">PROJECT OVERVIEW</span>
+      <h2 class="po__title">왜 어떤 제품은<br>자꾸 손이 갈까?</h2>
+      <div class="po__rule"></div>
+      <p class="po__lead">작고 귀여운 패키지.<br>손이 자주 가는 사용감.<br>가방에 넣고 다니고 싶은 크기.</p>
+      <p class="po__body">사용자가 자연스럽게 손이 가고,<br>매일 들고 다니고 싶은 뷰티 브랜드를 만들고자 했습니다.</p>
+      <span class="po__values-label">BRAND CORE VALUES</span>
+      <div class="po__cards">
+        <div class="po__card">
+          <span class="po__card-num">01</span>
+          <p class="po__card-en">Desirable</p>
+          <p class="po__card-ko">한 번쯤<br>써보고 싶은 것</p>
+        </div>
+        <div class="po__card">
+          <span class="po__card-num">02</span>
+          <p class="po__card-en">Portable</p>
+          <p class="po__card-ko">언제나<br>함께하는 것</p>
+        </div>
+        <div class="po__card">
+          <span class="po__card-num">03</span>
+          <p class="po__card-en">Everyday</p>
+          <p class="po__card-ko">매일<br>손이 가는 것</p>
+        </div>
+      </div>
+    </div>
+    <div class="po__right">
+      <img src="../assets/images/ode/ode-project-overview.jpg" alt="Project Overview">
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       02 PROBLEM DEFINITION
+  ────────────────────────────────────────────── -->
+  <style>
+    /* ── 그리드 토큰: 콘텐츠 max 1200 · margin 80 · gutter 24 (UI DESIGN 섹션 제외) ── */
+    .pd { background: #352a20; padding: 130px max(80px, (100% - 1440px) / 2) 140px; color: #f5f1ed; text-align: center; }
+    .pd__label { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: rgba(245,241,237,0.5); margin-bottom: 36px; }
+    .pd__title { font-family: 'Gowun Batang', serif; font-size: clamp(28px, 3vw, 46px); font-weight: 700; line-height: 1.35; letter-spacing: -0.02em; color: #f5f1ed; margin-bottom: 48px; }
+    .pd__dots { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 28px; }
+    .pd__dots span { display: block; width: 4px; height: 4px; border-radius: 50%; background: rgba(245,241,237,0.4); }
+    .pd__quote { font-family: 'Gowun Batang', serif; font-size: clamp(16px, 1.6vw, 22px); line-height: 1.8; color: #e7cda9; max-width: 760px; margin: 0 auto 80px; }
+    .pd__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 64px; }
+    .pd__card { border-top: 1px solid rgba(245,241,237,0.22); padding: 32px 40px 0; }
+    .pd__card-num { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.15em; color: rgba(245,241,237,0.45); margin-bottom: 16px; }
+    .pd__card-title { font-family: 'Gowun Batang', serif; font-size: 20px; font-weight: 700; color: #f5f1ed; margin-bottom: 12px; line-height: 1.4; }
+    .pd__card-desc { font-size: 16px; line-height: 1.85; color: rgba(245,241,237,0.6); font-family: 'Gowun Batang', serif; }
+    .pd__insight { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 20px; }
+    .pd__insight-icon { font-size: 28px; color: #e7cda9; line-height: 1; margin: 4px 0; }
+    .pd__insight-label { font-size: 22px; font-weight: 400; letter-spacing: 0.08em; color: rgba(245,241,237,0.55); font-family: 'Cormorant Garamond', serif; font-style: italic; }
+    .pd__insight-text { font-family: 'Gowun Batang', serif; font-size: clamp(18px, 1.8vw, 26px); font-weight: 700; line-height: 1.7; color: #f5f1ed; margin-top: 8px; }
+    .pd__em { color: #e7cda9; font-weight: 700; }
+    @media (max-width: 768px) { .pd__grid { grid-template-columns: 1fr; } .pd__card { padding: 28px 0 0; } }
+  </style>
+
+  <section class="pd">
+    <span class="pd__label">PROBLEM DEFINITION</span>
+    <h2 class="pd__title">실무에서 발견한 문제를<br>브랜드 기획으로 풀어내다</h2>
+    <div class="pd__dots"><span></span><span></span><span></span></div>
+    <p class="pd__quote">" 구매는 이루어지지만, 일상 속에서 <span class="pd__em">꾸준히 사용되는 제품은 많지 않았다.</span> "</p>
+    <div class="pd__grid">
+      <div class="pd__card">
+        <span class="pd__card-num">01</span>
+        <p class="pd__card-title"><span class="pd__em">잊혀지는</span> 제품</p>
+        <p class="pd__card-desc">구매 후 사용 빈도 감소</p>
+      </div>
+      <div class="pd__card">
+        <span class="pd__card-num">02</span>
+        <p class="pd__card-title"><span class="pd__em">휴대되지 않는</span> 패키지</p>
+        <p class="pd__card-desc">일상 속 사용 경험 부족</p>
+      </div>
+      <div class="pd__card">
+        <span class="pd__card-num">03</span>
+        <p class="pd__card-title"><span class="pd__em">경험되지 않는</span> 온라인</p>
+        <p class="pd__card-desc">실물 경험의 부재</p>
+      </div>
+    </div>
+    <div class="pd__insight">
+      <span class="pd__insight-icon">✦</span>
+      <span class="pd__insight-label">Insight</span>
+      <p class="pd__insight-text">사용자가 <span class="pd__em">찾고, 사용하고, 다시 손이 가는</span> 경험에 집중했습니다</p>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       03 MARKET RESEARCH
+  ────────────────────────────────────────────── -->
+  <style>
+    .mr { background: #ece3d9; padding: 130px max(80px, (100% - 1440px) / 2) 140px; color: #2a2118; }
+    .mr__label { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: rgba(42,33,24,0.45); margin-bottom: 28px; text-align: center; }
+    .mr__title { font-family: 'Gowun Batang', serif; font-size: clamp(32px, 3.4vw, 52px); font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; color: #1a1410; margin-bottom: 72px; text-align: center; }
+    .mr__brands { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 96px; }
+    .mr__brand { border: 1px solid rgba(42,33,24,0.18); padding: 32px 24px 32px; display: flex; flex-direction: column; }
+    .mr__brand-tag { font-size: 16px; font-weight: 700; letter-spacing: 0.18em; color: #8D775F; margin-bottom: 20px; }
+    .mr__brand-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 2.8vw, 40px); font-style: italic; color: #1a1410; letter-spacing: -0.01em; line-height: 1; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(42,33,24,0.12); }
+    .mr__brand-right { display: none; }
+    .mr__brand-feature-label { font-size: 16px; font-weight: 700; letter-spacing: 0.15em; color: rgba(42,33,24,0.55); margin-bottom: 10px; }
+    .mr__brand-desc { font-size: 16px; line-height: 1.85; color: rgba(42,33,24,0.85); font-family: 'Gowun Batang', serif; }
+    .mr__opp-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .mr__opp-arrow { width: 1px; height: 60px; background: rgba(42,33,24,0.25); margin-bottom: 40px; }
+    .mr__opp-label { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: rgba(42,33,24,0.45); margin-bottom: 20px; }
+    .mr__opp-title { font-family: 'Gowun Batang', serif; font-size: clamp(26px, 2.8vw, 40px); font-weight: 700; color: #1a1410; line-height: 1.45; letter-spacing: -0.02em; margin-bottom: 28px; }
+    .mr__opp-desc { font-family: 'Gowun Batang', serif; font-size: 16px; line-height: 2; color: rgba(42,33,24,0.7); max-width: 640px; }
+    .mr__opp-desc strong { color: #8D775F; font-weight: 700; }
+    .mr__opp-closing { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 3vw, 44px); font-style: italic; font-weight: 700; line-height: 1.4; color: #8D775F; margin-top: 40px; }
+    @media (max-width: 900px) {
+      .mr__brand { grid-template-columns: 1fr; gap: 12px; }
+      .mr__opp-wrap { grid-template-columns: 1fr; gap: 40px; }
+    }
+  </style>
+
+  <section class="mr">
+    <span class="mr__label">MARKET RESEARCH</span>
+    <h2 class="mr__title">시장은 이 문제를<br>어떻게 풀고 있을까</h2>
+
+    <div class="mr__brands">
+      <div class="mr__brand">
+        <p class="mr__brand-tag">GLOBAL · MINIMAL</p>
+        <p class="mr__brand-name">rhode</p>
+        <p class="mr__brand-feature-label">FEATURE</p>
+        <p class="mr__brand-desc">미니멀 패키징 + 현대적 뷰티</p>
+      </div>
+      <div class="mr__brand">
+        <p class="mr__brand-tag">KOREA · PLAYFUL</p>
+        <p class="mr__brand-name">fwee</p>
+        <p class="mr__brand-feature-label">FEATURE</p>
+        <p class="mr__brand-desc">감각적 컬러 + 독특한 사용감</p>
+      </div>
+      <div class="mr__brand">
+        <p class="mr__brand-tag">KOREA · DAILY</p>
+        <p class="mr__brand-name">anillo</p>
+        <p class="mr__brand-feature-label">FEATURE</p>
+        <p class="mr__brand-desc">라이프스타일 + 일상 사용 경험</p>
+      </div>
+      <div class="mr__brand">
+        <p class="mr__brand-tag">KOREA · OBJET</p>
+        <p class="mr__brand-name">무지개맨션</p>
+        <p class="mr__brand-feature-label">FEATURE</p>
+        <p class="mr__brand-desc">오브제 디자인 + 소장 욕구</p>
+      </div>
+    </div>
+
+    <div class="mr__opp-wrap">
+      <div class="mr__opp-arrow"></div>
+      <span class="mr__opp-label">OPPORTUNITY</span>
+      <h3 class="mr__opp-title">감성과 휴대성을 동시에 담은<br>포켓 뷰티의 빈자리</h3>
+      <p class="mr__opp-desc">각 브랜드는 미니멀, 컬러, 라이프스타일, 오브제 중 하나에 집중했습니다.<br><strong>일상에 자연스럽게 스며들며 감성과 기능을 함께 담은 브랜드는 없었습니다.</strong></p>
+      <p class="mr__opp-closing">ODE는 그 빈 지점에서 출발했습니다.</p>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       BRAND NAMING
+  ────────────────────────────────────────────── -->
+  <style>
+    .bn {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .bn__bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .bn__overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 48px 56px 64px 56px;
+    }
+    .bn__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.7);
+    }
+    .bn__center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      gap: 48px;
+    }
+    .bn__circles {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .bn__circle {
+      width: clamp(160px, 18vw, 260px);
+      height: clamp(160px, 18vw, 260px);
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bn__circle-text {
+      font-size: clamp(20px, 2.4vw, 36px);
+      font-weight: 400;
+      color: #fff;
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: 0.02em;
+    }
+    .bn__plus {
+      font-size: clamp(24px, 2.8vw, 40px);
+      color: rgba(255,255,255,0.8);
+      font-weight: 300;
+    }
+    .bn__name {
+      font-size: clamp(48px, 6vw, 90px);
+      font-weight: 400;
+      letter-spacing: 0.4em;
+      color: #fff;
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .bn__bottom {
+      width: 100%;
+      text-align: center;
+    }
+    .bn__tagline-en {
+      font-size: clamp(16px, 1.6vw, 22px);
+      font-weight: 400;
+      color: rgba(255,255,255,0.85);
+      font-family: 'Cormorant Garamond', serif;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .bn__tagline-ko {
+      font-size: clamp(16px, 1.4vw, 18px);
+      color: rgba(255,255,255,0.82);
+      font-family: 'Gowun Batang', serif;
+    }
+  </style>
+
+  <section class="bn">
+    <img class="bn__bg" src="../assets/images/ode/ode-brand-naming.jpg" alt="Brand Naming">
+    <div class="bn__overlay">
+      <span class="bn__label">BRAND NAMING</span>
+
+      <div class="bn__center">
+        <div class="bn__circles">
+          <div class="bn__circle">
+            <span class="bn__circle-text">Ordinary</span>
+          </div>
+          <span class="bn__plus">+</span>
+          <div class="bn__circle">
+            <span class="bn__circle-text">Everyday</span>
+          </div>
+        </div>
+        <p class="bn__name">O &nbsp; D &nbsp; E</p>
+      </div>
+
+      <div class="bn__bottom">
+        <p class="bn__tagline-en">An ode to everyday moments.</p>
+        <p class="bn__tagline-ko">평범한 일상에 보내는 작은 찬가</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       DESIGN SYSTEM
+  ────────────────────────────────────────────── -->
+  <style>
+    .ds {
+      background: #3a2e28;
+      padding: 80px max(80px, (100% - 1440px) / 2) 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
+    }
+    .ds__top-label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.45);
+    }
+    .ds__body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+    }
+    .ds__left { display: flex; flex-direction: column; }
+
+    /* ── TYPOGRAPHY ── */
+    .ds__type-label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 48px;
+      display: block;
+    }
+    .ds__fonts {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+    .ds__font-item {
+      min-height: 120px;       /* 컬러 행과 동일 슬롯 → 베이스라인 정렬 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .ds__font-name {
+      display: block;
+      color: #fff;
+      margin-bottom: 14px;
+      line-height: 1;
+    }
+    .ds__font-name--gowun {
+      font-family: 'Gowun Batang', serif;
+      font-size: clamp(44px, 5vw, 72px);
+      font-weight: 400;
+    }
+    .ds__font-name--jost {
+      font-family: 'Jost', sans-serif;
+      font-size: clamp(40px, 4.5vw, 64px);
+      font-weight: 700;
+    }
+    .ds__font-name--cormorant {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 400;
+      font-style: italic;
+    }
+    .ds__font-desc {
+      font-size: 16px;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.72);
+      font-family: 'Gowun Batang', serif;
+    }
+
+    /* ── COLOR PALETTE ── */
+    .ds__color-label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 48px;
+      display: block;
+    }
+    .ds__colors {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+    .ds__color-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 32px;
+      min-height: 120px;       /* 타이포 슬롯과 동일 → 베이스라인 정렬 */
+    }
+    .ds__swatch {
+      height: 104px;
+      border-radius: 8px;
+    }
+    .ds__color-info-name {
+      font-size: 21px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .ds__color-info-hex {
+      font-size: 16px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .ds__color-info-desc {
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.72);
+      font-family: 'Gowun Batang', serif;
+    }
+    @media (max-width: 900px) {
+      .ds__body { grid-template-columns: 1fr; }
+      .ds { padding: 64px 28px 80px; }
+    }
+  </style>
+
+  <section class="ds">
+    <span class="ds__top-label">DESIGN SYSTEM</span>
+
+    <div class="ds__body">
+      <!-- TYPOGRAPHY -->
+      <div class="ds__left">
+        <span class="ds__type-label">TYPOGRAPHY</span>
+        <div class="ds__fonts">
+          <div class="ds__font-item">
+            <span class="ds__font-name ds__font-name--gowun">고운바탕</span>
+            <p class="ds__font-desc">국문 헤드라인</p>
+          </div>
+          <div class="ds__font-item">
+            <span class="ds__font-name ds__font-name--cormorant">Cormorant Garamond</span>
+            <p class="ds__font-desc">영문 헤드라인</p>
+          </div>
+          <div class="ds__font-item">
+            <span class="ds__font-name ds__font-name--jost">Jost</span>
+            <p class="ds__font-desc">본문 · UI 요소</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLOR PALETTE -->
+      <div class="ds__right">
+        <span class="ds__color-label">COLOR PALETTE</span>
+        <div class="ds__colors">
+          <div class="ds__color-row">
+            <div class="ds__swatch" style="background:#F5F1ED; border: 1px solid rgba(255,255,255,0.1);"></div>
+            <div class="ds__color-info">
+              <p class="ds__color-info-name">Soft Ivory</p>
+              <p class="ds__color-info-hex">#F5F1ED</p>
+              <p class="ds__color-info-desc">메인 배경</p>
+            </div>
+          </div>
+          <div class="ds__color-row">
+            <div class="ds__swatch" style="background:#E8E0D8; border: 1px solid rgba(255,255,255,0.1);"></div>
+            <div class="ds__color-info">
+              <p class="ds__color-info-name">Warm Beige</p>
+              <p class="ds__color-info-hex">#E8E0D8</p>
+              <p class="ds__color-info-desc">서브 배경</p>
+            </div>
+          </div>
+          <div class="ds__color-row">
+            <div class="ds__swatch" style="background:#8D775F;"></div>
+            <div class="ds__color-info">
+              <p class="ds__color-info-name">Mocha Beige</p>
+              <p class="ds__color-info-hex">#8D775F</p>
+              <p class="ds__color-info-desc">시그니처 컬러</p>
+            </div>
+          </div>
+          <div class="ds__color-row">
+            <div class="ds__swatch" style="background:#5C4F45;"></div>
+            <div class="ds__color-info">
+              <p class="ds__color-info-name">Deep Taupe</p>
+              <p class="ds__color-info-hex">#5C4F45</p>
+              <p class="ds__color-info-desc">텍스트 · 강조</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       RESPONSIVE WEB DESIGN
+  ────────────────────────────────────────────── -->
+  <style>
+    .rd {
+      background: #f5f1eb;
+      display: grid;
+      grid-template-columns: 34% 66%;
+      min-height: 100vh;
+      align-items: center;
+      padding: 100px max(80px, (100% - 1440px) / 2);
+      overflow: hidden;
+    }
+    .rd__left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0;
+      padding-right: 24px;
+    }
+    .rd__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(42,33,24,0.45);
+      margin-bottom: 24px;
+      display: block;
+    }
+    .rd__title {
+      font-size: clamp(30px, 3vw, 46px);
+      font-weight: 700;
+      line-height: 1.25;
+      color: #1a1410;
+      font-family: 'Gowun Batang', serif;
+      margin-bottom: 24px;
+    }
+    .rd__rule {
+      width: 36px;
+      height: 2px;
+      background: rgba(42,33,24,0.3);
+      margin-bottom: 28px;
+    }
+    .rd__desc {
+      font-size: 17px;
+      line-height: 1.9;
+      color: rgba(42,33,24,0.74);
+      font-family: 'Gowun Batang', serif;
+      margin-bottom: 36px;
+    }
+    .rd__tags {
+      display: flex;
+      gap: 10px;
+    }
+    .rd__tag {
+      padding: 8px 20px;
+      border: 1.5px solid rgba(42,33,24,0.25);
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1410;
+      letter-spacing: 0.04em;
+    }
+    .rd__right {
+      position: relative;
+      height: 760px;
+    }
+    /* PC — 좌측, 가장 뒤 */
+    .rd__mockup-pc {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 120%;
+      z-index: 1;
+    }
+    /* Laptop — 중간 */
+    .rd__mockup-laptop {
+      position: absolute;
+      top: 320px;
+      left: 300px;
+      width: 86%;
+      z-index: 2;
+    }
+    /* Mobile — PC와 Laptop 사이 하단, 가장 앞 (정사각 캔버스라 폰은 가운데 40%만 → 크게) */
+    .rd__mockup-mobile {
+      position: absolute;
+      top: 340px;
+      left: 130px;
+      width: 50%;
+      z-index: 3;
+    }
+    .rd__mockup-pc img,
+    .rd__mockup-laptop img,
+    .rd__mockup-mobile img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    @media (max-width: 900px) {
+      .rd {
+        grid-template-columns: 1fr;
+        padding: 72px 28px;
+      }
+      .rd__right { height: 380px; }
+    }
+  </style>
+
+  <section class="rd">
+    <div class="rd__left">
+      <span class="rd__label">RESPONSIVE WEB DESIGN</span>
+      <h2 class="rd__title">모든 화면에서<br>같은 브랜드 경험을</h2>
+      <div class="rd__rule"></div>
+      <p class="rd__desc">PC와 모바일 환경 모두를 고려한<br>반응형 웹사이트로 설계했습니다.</p>
+      <div class="rd__tags">
+        <span class="rd__tag">PC</span>
+        <span class="rd__tag">Laptop</span>
+        <span class="rd__tag">Mobile</span>
+      </div>
+    </div>
+
+    <div class="rd__right">
+      <div class="rd__mockup-pc">
+        <img src="../assets/images/ode/pc-mockup.png" alt="PC Mockup">
+      </div>
+      <div class="rd__mockup-laptop">
+        <img src="../assets/images/ode/laptop-mockup.png" alt="Laptop Mockup">
+      </div>
+      <div class="rd__mockup-mobile">
+        <img src="../assets/images/ode/responsive mobile.png" alt="Mobile Mockup">
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       UI DESIGN — MAIN PAGE
+  ────────────────────────────────────────────── -->
+  <style>
+    .mp {
+      background: #f5f1eb;
+      padding: 120px 72px 140px;
+    }
+    .mp__header {
+      text-align: center;
+      margin-bottom: 80px;
+    }
+    .mp__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(42,33,24,0.4);
+      display: block;
+      margin-bottom: 20px;
+    }
+    /* UI 페이지 4종 시리즈 넘버 (MAIN 01 · ABOUT 02 · SHOP 03 · STORE 04) */
+    .ui-num {
+      display: block;
+      font-family: 'Jost', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      color: #8D775F;
+      margin-bottom: 14px;
+    }
+    .mp__title {
+      font-size: clamp(36px, 3.6vw, 56px);
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      color: #1a1410;
+      font-family: 'Cormorant Garamond', serif;
+      margin-bottom: 20px;
+    }
+    .mp__desc {
+      font-size: 17px;
+      line-height: 2;
+      color: rgba(42,33,24,0.72);
+      font-family: 'Gowun Batang', serif;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* 스크린샷 + 주석 레이아웃 */
+    .mp__layout {
+      display: grid;
+      grid-template-columns: 1fr 52% 1fr;
+      gap: 40px;
+      /* stretch so the side annotation columns take the SAME height as the
+         centre image — that lets each annotation be placed at a % of the
+         image height (width-invariant), instead of fragile fixed px. */
+      align-items: stretch;
+    }
+    /* Annotation columns are just positioning contexts: their children are
+       absolutely placed at `top: var(--at)` (a % of the image height). */
+    .mp__annotations-left,
+    .mp__annotations-right {
+      position: relative;
+    }
+    .mp__annotation {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--at, 0);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .mp__annotation-head {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .mp__annotation-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1410;
+      line-height: 1.3;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .mp__annotation-callout {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      margin-left: 12px;
+    }
+    .mp__annotation-callout::before {
+      content: '';
+      display: block;
+      flex: 1;
+      height: 1px;
+      background: rgba(42,33,24,0.35);
+    }
+    .mp__annotation-callout::after {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(42,33,24,0.35);
+      margin-left: 2px;
+    }
+    .mp__annotation--right .mp__annotation-head {
+      flex-direction: row-reverse;
+    }
+    .mp__annotation--right .mp__annotation-callout {
+      margin-left: 0;
+      margin-right: 12px;
+      flex-direction: row-reverse;
+    }
+    .mp__annotation--right .mp__annotation-callout::after {
+      margin-left: 0;
+      margin-right: 2px;
+    }
+    .mp__annotation-desc {
+      font-size: 16px;
+      line-height: 1.85;
+      color: rgba(42,33,24,0.8);
+      font-family: 'Gowun Batang', serif;
+    }
+    .mp__annotation--right {
+      text-align: right;
+    }
+
+    .mp__screen {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(42,33,24,0.12);
+    }
+    .mp__screen img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    @media (max-width: 1024px) {
+      .mp__layout {
+        grid-template-columns: 1fr;
+      }
+      /* Back to normal flow on mobile — drop the %-anchored absolute layout. */
+      .mp__annotations-left,
+      .mp__annotations-right {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+        padding-top: 0;
+      }
+      .mp__annotation {
+        position: static;
+        top: auto;
+      }
+      .mp__annotation--right { text-align: left; }
+      .mp__annotation--right .mp__annotation-line { margin-left: 0; }
+    }
+  </style>
+
+  <section class="mp">
+    <div class="mp__header">
+      <span class="ui-num">01</span>
+      <h2 class="mp__title">· MAIN PAGE ·</h2>
+      <p class="mp__desc">사용자가 처음 마주하는 공간으로 브랜드의 첫 인상을 결정합니다.<br>
+        감성적인 비주얼과 직관적인 탐색 구조를 동시에 담아<br>
+        브랜드 경험 전체의 시작점이 되도록 설계했습니다.</p>
+    </div>
+
+    <div class="mp__layout">
+      <!-- 좌측 주석 -->
+      <div class="mp__annotations-left">
+        <div class="mp__annotation" style="--at: 1%;">
+          <div class="mp__annotation-head">
+            <p class="mp__annotation-title">단순하지만 직관적인 GNB</p>
+            <div class="mp__annotation-callout"></div>
+          </div>
+          <p class="mp__annotation-desc">단순하고 <strong>명료한 타이포로 구성</strong>된 GNB로<br>사용자가 직관적인 확인이<br>가능하도록 구성하였습니다.</p>
+        </div>
+        <div class="mp__annotation" style="--at: 66%;">
+          <div class="mp__annotation-head">
+            <p class="mp__annotation-title">라이프스타일 속 제품 발견</p>
+            <div class="mp__annotation-callout"></div>
+          </div>
+          <p class="mp__annotation-desc">라이프스타일 이미지에 <strong>제품 정보를 함께 제공하여</strong><br>브랜드 경험과 탐색이 자연스럽게 이어집니다.</p>
+        </div>
+      </div>
+
+      <!-- 중앙 스크린샷 -->
+      <div class="mp__screen">
+        <img src="../assets/images/ode/ode-main-page.jpg" alt="Main Page UI">
+      </div>
+
+      <!-- 우측 주석 -->
+      <div class="mp__annotations-right">
+        <div class="mp__annotation mp__annotation--right" style="--at: 11%;">
+          <div class="mp__annotation-head">
+            <p class="mp__annotation-title">브랜드 첫인상 전달</p>
+            <div class="mp__annotation-callout"></div>
+          </div>
+          <p class="mp__annotation-desc">사이트에 진입하는 순간 브랜드만의<br><strong>감성과 분위기를 경험할 수 있도록</strong><br><strong>비주얼 중심의</strong> 히어로 섹션을 구성했습니다.</p>
+        </div>
+        <div class="mp__annotation mp__annotation--right" style="--at: 34%;">
+          <div class="mp__annotation-head">
+            <p class="mp__annotation-title">제품 탐색 경험</p>
+            <div class="mp__annotation-callout"></div>
+          </div>
+          <p class="mp__annotation-desc">마우스 호버 시 제품을 사용하는 모델 컷과<br><strong>빠른 장바구니 추가 버튼을 제공하여</strong> 구매 행동으로<br>자연스럽게 이어질 수 있도록 설계했습니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       UI DESIGN — SHOP PAGE
+  ────────────────────────────────────────────── -->
+  <style>
+    .sh {
+      background: #f2ebe5;
+      padding: 120px 0 140px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sh__header {
+      text-align: center;
+      width: 72%;
+      max-width: 640px;
+      margin: 0 auto 72px;
+    }
+    .sh__title {
+      font-size: clamp(36px, 3.6vw, 56px);
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      color: #1a1410;
+      font-family: 'Cormorant Garamond', serif;
+      margin-bottom: 20px;
+    }
+    .sh__desc {
+      font-size: 17px;
+      line-height: 2;
+      color: rgba(42,33,24,0.74);
+      font-family: 'Gowun Batang', serif;
+    }
+
+    /* 메인 샵 스크린샷 (중앙, 좁고 긴 비율) */
+    .sh__hero {
+      width: 44%;
+      max-width: 600px;
+      margin: 0 auto 130px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(42,33,24,0.14);
+    }
+    .sh__hero img { width: 100%; height: auto; display: block; }
+
+    /* 공통 주석 스타일 (MAIN PAGE 주석과 동일한 룩) */
+    .sh__annotation { position: absolute; width: 360px; }
+    .sh__annotation-head { display: flex; align-items: center; }
+    .sh__annotation-title {
+      font-size: 17px; font-weight: 700; color: #1a1410;
+      line-height: 1.3; white-space: nowrap; flex-shrink: 0;
+    }
+    .sh__annotation-callout { display: flex; align-items: center; flex: 1; margin-left: 12px; }
+    .sh__annotation-callout::before { content: ''; display: block; flex: 1; height: 1px; background: rgba(42,33,24,0.35); }
+    .sh__annotation-callout::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.35); margin-left: 2px; }
+    .sh__annotation--right { text-align: right; }
+    .sh__annotation--right .sh__annotation-head { flex-direction: row-reverse; }
+    .sh__annotation--right .sh__annotation-callout { margin-left: 0; margin-right: 12px; flex-direction: row-reverse; }
+    .sh__annotation--right .sh__annotation-callout::after { margin-left: 0; margin-right: 2px; }
+    .sh__annotation-desc {
+      font-size: 16px; line-height: 1.85; color: rgba(42,33,24,0.8);
+      font-family: 'Gowun Batang', serif; margin-top: 12px;
+    }
+    .sh__annotation-desc strong { font-weight: 700; }
+    /* 꺾인(elbow) 화살표: 제목에서 오른쪽으로 뻗다가 위로 꺾여 카드를 가리킴.
+       border-bottom(가로) + border-right(세로)로 ㄱ자 코너를 만들고 끝에 점. */
+    .sh__annotation-head--elbow { display: flex; align-items: flex-end; }
+    .sh__annotation-elbow {
+      position: relative;
+      flex: none;
+      width: 92px;
+      align-self: flex-end;
+      height: 98px;           /* up-line just reaches the card bottom */
+      margin-left: 14px;
+      margin-bottom: 7px;
+      border-right: 1px solid rgba(42,33,24,0.35);
+      border-bottom: 1px solid rgba(42,33,24,0.35);
+    }
+    .sh__annotation-elbow::after {
+      content: '';
+      position: absolute;
+      top: -8px;             /* dot caps the line end with a small gap (no overlap) */
+      right: -3px;            /* exactly centered on the 1px vertical line */
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(42,33,24,0.35);
+    }
+
+    /* 제품 카드 2개 + 주석 블록 */
+    .sh__cards {
+      position: relative;
+      width: 82%;
+      max-width: 1080px;
+      margin: 0 auto 150px;
+      padding-bottom: 210px;
+    }
+    .sh__cards-row { display: flex; gap: 28px; width: 60%; }
+    .sh__card { flex: 1; border-radius: 4px; overflow: hidden; text-decoration: none; }
+    .sh__card img { width: 100%; height: auto; display: block; }
+    .sh__cards .sh__annotation--cart-ease { top: 28%; right: 0; }
+    .sh__cards .sh__annotation--explore { bottom: 0; left: 0; }
+    /* 메인 샵 스크린샷 → POCKET BLUSH 카드 연결선 (위 점/가로선 → 아래로 꺾임) */
+    .sh__link {
+      position: absolute;
+      top: -560px;          /* reach up to the POCKET BLUSH product in the shop grid */
+      left: 14%;
+      width: 172px;
+      height: 560px;
+      border-left: 1px solid rgba(42,33,24,0.35);
+      border-top: 1px solid rgba(42,33,24,0.35);
+      pointer-events: none;
+    }
+    .sh__link::after {
+      content: '';
+      position: absolute;
+      top: -3px;            /* vertically centered on the 1px horizontal line */
+      right: -7px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(42,33,24,0.35);
+    }
+
+    /* 장바구니 사이드패널 + 주석 블록 */
+    .sh__cart {
+      position: relative;
+      width: 82%;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .sh__cart-shot { width: 52%; margin-left: 14%; border-radius: 4px; overflow: hidden; box-shadow: 0 20px 60px rgba(42,33,24,0.12); }
+    .sh__cart-shot img { width: 100%; height: auto; display: block; }
+    .sh__cart .sh__annotation--optimize { top: 22%; left: calc(50% + 220px); width: 400px; }
+    /* BAG(샵 스크린샷 우상단) → 오른쪽 → 아래 → 카트 연결 bracket.
+       가로선은 스크린샷 오른쪽 가장자리(calc(50%+302px))부터 시작해 이미지를
+       관통하지 않음. 세로선은 우측 여백, 하단 가로선은 별도 요소로 카트까지. */
+    .sh__bag-link {
+      position: absolute;
+      top: 400px;                  /* 히어로 GNB의 BAG 아이콘 높이 */
+      left: calc(50% + 301px);     /* 히어로(샵 스크린샷) 우측 가장자리 */
+      right: 60px;
+      height: 1743px;              /* 아래 foot(카트 상단 y2143)까지 */
+      border-top: 1px solid rgba(42,33,24,0.35);
+      border-right: 1px solid rgba(42,33,24,0.35);
+      pointer-events: none;
+    }
+    .sh__bag-link::before { content:''; position:absolute; top:-2.5px; left:-2.5px; width:5px; height:5px; border-radius:50%; background:rgba(42,33,24,0.35); }
+    .sh__bag-link-foot {
+      position: absolute;
+      top: 2143px;                 /* 카트 패널 상단 가장자리 */
+      left: calc(50% + 173px);     /* 카트 패널 우측 가장자리(우상단 코너) */
+      right: 60px;
+      border-top: 1px solid rgba(42,33,24,0.35);
+      pointer-events: none;
+    }
+    .sh__bag-link-foot::before { content:''; position:absolute; top:-2.5px; left:-2.5px; width:5px; height:5px; border-radius:50%; background:rgba(42,33,24,0.35); }
+
+    @media (max-width: 1024px) {
+      .sh__hero { width: 72%; }
+      .sh__cards, .sh__cart { padding-bottom: 0; }
+      .sh__cards-row, .sh__cart-shot { width: 100%; }
+      .sh__annotation { position: static; width: 100%; margin-top: 28px; text-align: left; }
+      .sh__annotation--right { text-align: left; }
+      .sh__annotation--right .sh__annotation-head { flex-direction: row; }
+      .sh__annotation--right .sh__annotation-callout { margin-left: 12px; margin-right: 0; flex-direction: row; }
+      .sh__annotation-elbow,
+      .sh__link { display: none; }
+    }
+  </style>
+
+  <!-- ──────────────────────────────────────────────
+       UI DESIGN — ABOUT PAGE
+  ────────────────────────────────────────────── -->
+  <style>
+    .ab {
+      background: #f2ebe5;
+      padding: 120px 0 140px;
+      position: relative;
+    }
+    .ab__header {
+      text-align: center;
+      width: 72%;
+      margin: 0 auto 80px;
+    }
+    .ab__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(42,33,24,0.4);
+      display: block;
+      margin-bottom: 20px;
+    }
+    .ab__title {
+      font-size: clamp(36px, 3.6vw, 56px);
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      color: #1a1410;
+      font-family: 'Cormorant Garamond', serif;
+      margin-bottom: 20px;
+    }
+    .ab__desc {
+      font-size: 17px;
+      line-height: 2;
+      color: rgba(42,33,24,0.74);
+      font-family: 'Gowun Batang', serif;
+    }
+    .ab__layout {
+      width: 82%;
+      max-width: 1400px;     /* 이미지 크기 고정 → 주석(고정 px) 정렬 안정화 */
+      margin: 0 auto;
+    }
+    .ab__annotations-left {
+      position: absolute;
+      left: 40px;
+      top: 0;
+      width: 280px;
+    }
+    .ab__annotations-right {
+      position: absolute;
+      right: 40px;
+      top: 0;
+      width: 420px;
+    }
+    .ab__annotation {
+      position: absolute;
+      width: 100%;
+    }
+    .ab__screen-wrap {
+      width: 100%;
+      position: relative;
+    }
+    /* 슬로건(푸터 위) 가리키는 주석 — 이미지 비율(%) 기준 앵커로 폭 변화에 안정적 */
+    .ab__slogan-note {
+      position: absolute;
+      top: 80.6%;            /* 점(head)이 슬로건 텍스트 세로 중심(≈81.6%)에 오도록 */
+      left: 73%;             /* 점=슬로건 밴드 우측 끝, 텍스트는 우측 베이지 여백 위 */
+      width: 400px;
+      text-align: right;     /* 텍스트 우측 정렬 */
+    }
+    .ab__slogan-note .ab__annotation-head { display: flex; flex-direction: row-reverse; align-items: center; }
+    .ab__slogan-note .ab__annotation-title { color: #1a1410; }
+    .ab__slogan-note .ab__annotation-callout { display: flex; flex: 1; align-items: center; margin-left: 0; margin-right: 12px; flex-direction: row-reverse; }
+    .ab__slogan-note .ab__annotation-callout::before { content: ''; display: block; flex: 1; height: 1px; background: rgba(42,33,24,0.35); }
+    .ab__slogan-note .ab__annotation-callout::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.35); margin-right: 2px; }
+    .ab__slogan-note .ab__annotation-desc { color: rgba(42,33,24,0.8); margin-top: 12px; }
+    .ab__slogan-note .ab__annotation-desc strong { color: #1a1410; font-weight: 700; }
+
+    /* 컬렉션 무드 — 좌측 여백에 텍스트, 점은 가운데 콘텐츠 좌측부(이미지 % 앵커) */
+    .ab__collection-note { position: absolute; top: 47%; right: 69%; width: 300px; text-align: left; }
+    .ab__collection-note .ab__annotation-head { display: flex; align-items: center; }
+    .ab__collection-note .ab__annotation-callout { display: flex; flex: 1; align-items: center; margin-left: 12px; }
+    .ab__collection-note .ab__annotation-callout::before { content: ''; display: block; flex: 1; height: 1px; background: rgba(42,33,24,0.35); }
+    .ab__collection-note .ab__annotation-callout::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.35); margin-left: 2px; }
+    .ab__collection-note .ab__annotation-desc { color: rgba(42,33,24,0.8); margin-top: 12px; }
+    .ab__collection-note .ab__annotation-desc strong { color: #1a1410; font-weight: 700; }
+
+    /* Parallax — 세로 콜아웃: 점이 위(튀어나온 이미지)를 가리키고 라벨은 아래 */
+    .ab__parallax-note { position: absolute; top: 35%; left: 73%; width: 300px; text-align: center; }
+    .ab__parallax-note .ab__pv { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; }
+    .ab__parallax-note .ab__pv::before { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.5); margin-bottom: 6px; }
+    .ab__parallax-note .ab__pv::after { content: ''; display: block; width: 0; height: 96px; border-left: 1px solid rgba(42,33,24,0.4); }
+    .ab__parallax-note .ab__annotation-title { color: #1a1410; white-space: normal; }
+    .ab__parallax-note .ab__annotation-desc { color: rgba(42,33,24,0.8); margin-top: 10px; }
+    .ab__parallax-note .ab__annotation-desc strong { color: #1a1410; font-weight: 700; }
+    .ab__annotation-head {
+      display: flex;
+      align-items: center;
+    }
+    .ab__annotation-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1410;
+      line-height: 1.3;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .ab__annotation-callout {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      margin-left: 12px;
+    }
+    .ab__annotation-callout::before {
+      content: '';
+      display: block;
+      flex: 1;
+      height: 1px;
+      background: rgba(42,33,24,0.35);
+    }
+    .ab__annotation-callout::after {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(42,33,24,0.35);
+      margin-left: 2px;
+    }
+    .ab__annotation--right .ab__annotation-head {
+      flex-direction: row-reverse;
+    }
+    .ab__annotation--right .ab__annotation-callout {
+      margin-left: 0;
+      margin-right: 12px;
+      flex-direction: row-reverse;
+    }
+    .ab__annotation--right .ab__annotation-callout::after {
+      margin-left: 0;
+      margin-right: 2px;
+    }
+    .ab__annotation-desc {
+      font-size: 16px;
+      line-height: 1.85;
+      color: rgba(42,33,24,0.8);
+      font-family: 'Gowun Batang', serif;
+      font-weight: 400;
+      margin-top: 12px;
+    }
+    .ab__annotation-desc strong {
+      font-weight: 700;
+    }
+    /* 세로 화살표 (Parallex Scrolling용) — 점·선을 서로 중심 정렬,
+       컨테이너는 점 너비로 줄여 좌측에 붙임 */
+    .ab__annotation-callout--vertical {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: fit-content;
+      margin-bottom: 16px;
+    }
+    .ab__annotation-callout--vertical::before {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(42,33,24,0.35);
+      margin-bottom: 4px;
+    }
+    .ab__annotation-callout--vertical::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 80px;
+      border-left: 1px solid rgba(42,33,24,0.35);
+    }
+    .ab__annotation--right {
+      text-align: right;
+    }
+    .ab__screen {
+      overflow: hidden;
+    }
+    .ab__screen img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+
+  <section class="ab">
+    <div class="ab__header">
+      <span class="ui-num">02</span>
+      <h2 class="ab__title">· ABOUT ·</h2>
+      <p class="ab__desc">일상 속 작은 순간과 감정에서 영감을 받은<br>이미지와 메시지를 통해 브랜드 아이덴티티를<br>자연스럽게 경험할 수 있도록 설계했습니다.</p>
+    </div>
+
+    <!-- 중앙 스크린샷 + 주석(이미지 % 앵커, 점이 가운데 콘텐츠 위) -->
+    <div class="ab__layout">
+      <div class="ab__screen-wrap">
+        <div class="ab__screen">
+          <img src="../assets/images/ode/brand about.png" alt="About Page UI">
+        </div>
+
+        <div class="ab__collection-note">
+          <div class="ab__annotation-head">
+            <p class="ab__annotation-title">컬렉션 무드 경험</p>
+            <div class="ab__annotation-callout"></div>
+          </div>
+          <p class="ab__annotation-desc">호버 시 컬러가 드러나며<br><strong>컬렉션의 감성</strong>을 자연스럽게 전달합니다.</p>
+        </div>
+
+        <div class="ab__parallax-note">
+          <div class="ab__pv"></div>
+          <p class="ab__annotation-title">Parallax Scrolling</p>
+          <p class="ab__annotation-desc">부드러운 속도의 Y축 패럴랙스 스크롤링을<br>사용하여 <strong>감각적인 브랜드의 분위기</strong>를 전달합니다.</p>
+        </div>
+
+        <div class="ab__slogan-note">
+          <div class="ab__annotation-head">
+            <p class="ab__annotation-title">브랜드 경험 강화</p>
+            <div class="ab__annotation-callout"></div>
+          </div>
+          <p class="ab__annotation-desc">슬로건과 이미지를 결합해<br><strong>일상에 머무는 브랜드</strong>로 인식되도록 설계했습니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UI DESIGN — SHOP PAGE (styles defined above, after the MAIN PAGE block) -->
+  <section class="sh">
+    <div class="sh__bag-link"></div>
+    <div class="sh__bag-link-foot"></div>
+    <div class="sh__header">
+      <span class="ui-num">03</span>
+      <h2 class="sh__title">· SHOP ·</h2>
+      <p class="sh__desc">카테고리 탐색부터 제품 확인, 장바구니까지<br>자연스럽고 직관적인 구매 흐름을 제공합니다.</p>
+    </div>
+
+    <!-- 메인 샵 스크린샷 -->
+    <div class="sh__hero">
+      <img src="../assets/images/ode/ode-shop.jpg" alt="Shop Page UI">
+    </div>
+
+    <!-- 제품 카드 2개 + 주석 -->
+    <div class="sh__cards">
+      <div class="sh__link"></div>
+      <div class="sh__cards-row">
+        <a class="sh__card" href="#"><img src="../assets/images/ode/ode-shop-1-1.jpg" alt="Pocket Blush Fig Mousse"></a>
+        <a class="sh__card" href="#"><img src="../assets/images/ode/ode-shop-1-2.jpg" alt="Pocket Blush Cherry Kiss"></a>
+      </div>
+
+      <div class="sh__annotation sh__annotation--right sh__annotation--cart-ease">
+        <div class="sh__annotation-head">
+          <p class="sh__annotation-title">간편한 구매 경험</p>
+          <div class="sh__annotation-callout"></div>
+        </div>
+        <p class="sh__annotation-desc">제품 탐색 중에도 즉시 <strong>장바구니에 담을 수 있도록</strong><br>기능을 적용하여 구매 편의성을 높였습니다.</p>
+      </div>
+
+      <div class="sh__annotation sh__annotation--explore">
+        <div class="sh__annotation-head sh__annotation-head--elbow">
+          <p class="sh__annotation-title">제품 경험 중심의 탐색</p>
+          <div class="sh__annotation-elbow"></div>
+        </div>
+        <p class="sh__annotation-desc">마우스 호버 시 <strong>모델 착용 이미지를</strong><br><strong>자동으로 노출</strong>하여 제품의 색상과 사용 모습을<br>직관적으로 확인할 수 있도록 설계했습니다.</p>
+      </div>
+    </div>
+
+    <!-- 장바구니 사이드패널 + 주석 -->
+    <div class="sh__cart">
+      <div class="sh__cart-shot">
+        <img src="../assets/images/ode/ode-cart.jpg" alt="Cart Side Panel UI">
+      </div>
+
+      <div class="sh__annotation sh__annotation--optimize">
+        <div class="sh__annotation-head">
+          <p class="sh__annotation-title">구매 경험 최적화</p>
+        </div>
+        <p class="sh__annotation-desc">사이드 패널 형태로 <strong>페이지 이동 없이</strong><br>상품 관리부터 결제까지 이어지도록 설계했습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       UI DESIGN — STORE PAGE
+  ────────────────────────────────────────────── -->
+  <style>
+    .st { background: #f2ebe5; padding: 120px 0 140px; position: relative; overflow: hidden; }
+    .st__header { text-align: center; width: 72%; max-width: 640px; margin: 0 auto 80px; }
+    .st__title { font-size: clamp(36px, 3.6vw, 56px); font-weight: 400; letter-spacing: 0.3em; color: #1a1410; font-family: 'Cormorant Garamond', serif; margin-bottom: 20px; }
+    .st__desc { font-size: 17px; line-height: 2; color: rgba(42,33,24,0.74); font-family: 'Gowun Batang', serif; }
+
+    /* 데스크톱 스크린샷 + 폰 목업 */
+    .st__stage { position: relative; width: 82%; max-width: 1100px; margin: 0 auto; padding-bottom: 170px; }
+    .st__shot { position: relative; z-index: 2; width: 44%; margin: 0 auto; border-radius: 6px; overflow: hidden; box-shadow: 0 24px 70px rgba(42,33,24,0.14); }
+    .st__shot img { width: 100%; height: auto; display: block; }
+    .st__phone { position: absolute; z-index: 3; left: 63%; top: 33%; width: 22%; filter: drop-shadow(0 24px 48px rgba(42,33,24,0.25)); }
+    .st__phone img { width: 100%; height: auto; display: block; }
+
+    /* 주석 공통 룩 */
+    .st__annotation { position: absolute; width: 280px; }
+    .st__annotation-head { display: flex; align-items: center; }
+    .st__annotation-title { font-size: 17px; font-weight: 700; color: #1a1410; line-height: 1.3; white-space: nowrap; flex-shrink: 0; }
+    .st__annotation-callout { display: flex; align-items: center; flex: 1; margin-left: 12px; }
+    .st__annotation-callout::before { content: ''; display: block; flex: 1; height: 1px; background: rgba(42,33,24,0.35); }
+    .st__annotation-callout::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.35); margin-left: 2px; }
+    .st__annotation-desc { font-size: 16px; line-height: 1.85; color: rgba(42,33,24,0.8); font-family: 'Gowun Batang', serif; margin-top: 12px; }
+    .st__annotation-desc strong { font-weight: 700; }
+
+    /* 위로 향하는 세로 화살표 (반응형 웹사이트 → 폰), 점·선 중심 정렬 */
+    .st__annotation-upline { display: flex; flex-direction: column; align-items: center; width: fit-content; margin-bottom: 14px; }
+    .st__annotation-upline::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: rgba(42,33,24,0.35); margin-bottom: 4px; }
+    .st__annotation-upline::after { content: ''; width: 0; height: 40px; border-left: 1px solid rgba(42,33,24,0.35); }
+
+    /* 위치 */
+    .st__stage .st__annotation--visual { top: 28%; left: 0; }
+    .st__stage .st__annotation--info { top: 64%; left: 0; }
+    .st__stage .st__annotation--responsive { top: 86%; left: 77%; width: 230px; }
+
+    @media (max-width: 1024px) {
+      .st__shot { width: 100%; margin-left: 0; }
+      .st__phone { position: static; width: 42%; margin: 28px auto 0; }
+      .st__annotation { position: static; width: 100%; margin-top: 28px; }
+      .st__annotation-upline { display: none; }
+    }
+  </style>
+
+  <section class="st">
+    <div class="st__header">
+      <span class="ui-num">04</span>
+      <h2 class="st__title">· STORE ·</h2>
+      <p class="st__desc">제품과 브랜드를 가장 가까이에서 경험할 수 있는<br>공간으로 설계했습니다.</p>
+    </div>
+
+    <div class="st__stage">
+      <div class="st__shot"><img src="../assets/images/ode/ode-store.jpg" alt="Store Page UI"></div>
+      <div class="st__phone"><img src="../assets/images/ode/mobile-mockup.png" alt="Store Mobile Mockup"></div>
+
+      <div class="st__annotation st__annotation--visual">
+        <div class="st__annotation-head">
+          <p class="st__annotation-title">브랜드 무드를 담은 공간 비주얼</p>
+          <div class="st__annotation-callout"></div>
+        </div>
+        <p class="st__annotation-desc">쇼룸 이미지를 전면에 배치하여<br><strong>방문 전 공간의 분위기를</strong><br><strong>직관적으로</strong> 전달했습니다.</p>
+      </div>
+
+      <div class="st__annotation st__annotation--info">
+        <div class="st__annotation-head">
+          <p class="st__annotation-title">방문 정보의 직관적인 구성</p>
+          <div class="st__annotation-callout"></div>
+        </div>
+        <p class="st__annotation-desc">위치, 운영시간, 연락처 등<br><strong>핵심 정보를 한 영역에 정리해</strong><br>빠르게 확인할 수 있도록 설계했습니다.</p>
+      </div>
+
+      <div class="st__annotation st__annotation--responsive">
+        <div class="st__annotation-upline"></div>
+        <p class="st__annotation-title">반응형 웹사이트</p>
+        <p class="st__annotation-desc">노트북, 모바일, 데스크탑 등<br>다양한 기기에서 대응이 가능한<br><strong>적용형 웹사이트</strong>입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       CLOSING — brand bookend
+  ────────────────────────────────────────────── -->
+  <style>
+    .cl { position: relative; height: 78vh; min-height: 540px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .cl__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .cl::after { content: ''; position: absolute; inset: 0; background: rgba(20,16,12,0.58); }
+    .cl__inner { position: relative; z-index: 1; text-align: center; }
+    .cl__mark { font-family: 'Cormorant Garamond', serif; font-size: clamp(56px, 7vw, 104px); font-weight: 400; letter-spacing: 0.32em; color: #fff; margin-bottom: 28px; }
+    .cl__en { font-family: 'Cormorant Garamond', serif; font-size: clamp(20px, 2.4vw, 32px); letter-spacing: 0.05em; color: rgba(255,255,255,0.9); margin-bottom: 12px; }
+    .cl__ko { font-family: 'Gowun Batang', serif; font-size: clamp(16px, 1.5vw, 19px); color: rgba(255,255,255,0.78); letter-spacing: 0.02em; }
+  </style>
+
+  <section class="cl">
+    <img class="cl__bg" src="../assets/images/ode/ode-hero.jpg" alt="ODE">
+    <div class="cl__inner">
+      <p class="cl__mark">ODE</p>
+      <p class="cl__en">An ode to everyday moments.</p>
+      <p class="cl__ko">평범한 일상에 보내는 작은 찬가</p>
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────────────
+       REFLECTION + CTA
+  ────────────────────────────────────────────── -->
+  <style>
+    .rf { background: #f2ebe5; padding: 130px max(80px, (100% - 1440px) / 2) 110px; color: #2a2118; }
+    .rf__label { display: block; font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: rgba(42,33,24,0.45); margin-bottom: 28px; }
+    .rf__title { font-family: 'Gowun Batang', serif; font-size: clamp(32px, 3.4vw, 52px); font-weight: 700; letter-spacing: -0.02em; color: #1a1410; margin-bottom: 76px; }
+    .rf__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 110px; }
+    .rf__card { border-top: 1px solid rgba(42,33,24,0.22); padding-top: 26px; }
+    .rf__card-en { font-family: 'Cormorant Garamond', serif; font-size: 16px; letter-spacing: 0.1em; color: #8D775F; }
+    .rf__card-ko { font-family: 'Gowun Batang', serif; font-size: 21px; font-weight: 700; color: #1a1410; margin: 12px 0 16px; }
+    .rf__card-desc { font-size: 16px; line-height: 1.95; color: rgba(42,33,24,0.74); font-family: 'Gowun Batang', serif; }
+    .rf__cta { border-top: 1px solid rgba(42,33,24,0.12); padding-top: 72px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .rf__nav-link { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: #2a2118; transition: opacity 0.2s; }
+    .rf__nav-link:hover { opacity: 0.55; }
+    .rf__nav-link--next { align-items: flex-end; }
+    .rf__nav-dir { font-size: 16px; font-weight: 700; letter-spacing: 0.2em; color: rgba(42,33,24,0.4); }
+    .rf__nav-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(22px, 2.4vw, 34px); font-style: italic; color: #1a1410; line-height: 1; }
+    .rf__nav-arrow { font-size: 18px; color: rgba(42,33,24,0.35); margin-top: 4px; }
+    @media (max-width: 768px) { .rf__grid { grid-template-columns: 1fr; gap: 28px; } }
+  </style>
+
+  <section class="rf">
+    <span class="rf__label">REFLECTION</span>
+    <h2 class="rf__title">프로젝트를 마치며</h2>
+    <div class="rf__grid">
+      <div class="rf__card">
+        <span class="rf__card-en">What I Learned</span>
+        <p class="rf__card-ko">사용자의 시선으로 생각하기</p>
+        <p class="rf__card-desc">'내가 소비자라면 어떤 제품을 원할까?'<br>가장 중요한 출발점이라는 것을 다시 배웠습니다.</p>
+      </div>
+      <div class="rf__card">
+        <span class="rf__card-en">Room to Grow</span>
+        <p class="rf__card-ko">제품 디자인의 완성도</p>
+        <p class="rf__card-desc">손에 쥐는 경험과 패키지 아이덴티티는<br>앞으로 더 발전시키고 싶습니다.</p>
+      </div>
+      <div class="rf__card">
+        <span class="rf__card-en">Next Step</span>
+        <p class="rf__card-ko">브랜드 경험의 확장</p>
+        <p class="rf__card-desc">ODE를 제품이 아닌,<br>일상 속 브랜드 경험으로 발전시키고 싶습니다.</p>
+      </div>
+    </div>
+    <div class="rf__cta">
+      <a class="rf__nav-link rf__nav-link--prev" href="../index.html#work">
+        <span class="rf__nav-dir">← PROJECT LIST</span>
+        <span class="rf__nav-title">Selected Work</span>
+      </a>
+      <a class="rf__nav-link rf__nav-link--next" href="sledding.html">
+        <span class="rf__nav-dir">NEXT PROJECT →</span>
+        <span class="rf__nav-title">Sledding Game</span>
+      </a>
+    </div>
+  </section>
+
+  <style>
+    .po {
+      display: grid;
+      grid-template-columns: 45% 55%;
+      min-height: 100vh;
+      background: #f5f1eb;
+    }
+    .po__left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 60px 80px 80px;
+      color: #2a2118;
+    }
+    .po__label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(42,33,24,0.45);
+      margin-bottom: 32px;
+      display: block;
+    }
+    .po__title {
+      font-size: clamp(36px, 3.6vw, 56px);
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: #1a1410;
+      margin-bottom: 24px;
+      font-family: 'Gowun Batang', serif;
+    }
+    .po__rule {
+      width: 40px;
+      height: 2px;
+      background: rgba(42,33,24,0.3);
+      margin-bottom: 28px;
+    }
+    .po__lead {
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 2;
+      color: #2a2118;
+      margin-bottom: 20px;
+      font-family: 'Gowun Batang', serif;
+    }
+    .po__body {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 2;
+      color: rgba(42,33,24,0.72);
+      margin-bottom: 56px;
+      font-family: 'Gowun Batang', serif;
+    }
+    .po__values-label {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(42,33,24,0.45);
+      margin-bottom: 20px;
+      display: block;
+    }
+    .po__cards {
+      display: flex;
+      gap: 14px;
+    }
+    .po__card {
+      flex: 1;
+      border: 1px solid rgba(42,33,24,0.15);
+      border-radius: 14px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .po__card-num {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(42,33,24,0.3);
+      text-decoration: underline;
+    }
+    .po__card-en {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1410;
+    }
+    .po__card-ko {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.8;
+      color: rgba(42,33,24,0.72);
+      font-family: 'Gowun Batang', serif;
+    }
+    .po__right {
+      overflow: hidden;
+    }
+    .po__right img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    @media (max-width: 768px) {
+      .po { grid-template-columns: 1fr; }
+      .po__left { padding: 64px 24px; }
+      .po__right { height: 70vw; }
+    }
+  </style>
+
+  <script>
+    (function () {
+      function splitChars(el) {
+        const text = el.textContent;
+        el.textContent = '';
+        return text.split('').map(function(ch) {
+          var s = document.createElement('span');
+          s.className = 'char';
+          s.textContent = ch;
+          el.appendChild(s);
+          return s;
+        });
+      }
+
+      function splitWords(el) {
+        var parts = el.textContent.trim().split(/(\s+)/);
+        el.textContent = '';
+        var spans = [];
+        parts.forEach(function(p) {
+          if (/^\s+$/.test(p)) {
+            el.appendChild(document.createTextNode(' '));
+          } else {
+            var s = document.createElement('span');
+            s.className = 'word';
+            s.textContent = p;
+            el.appendChild(s);
+            spans.push(s);
+          }
+        });
+        return spans;
+      }
+
+      requestAnimationFrame(function () {
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.to(document.documentElement, { opacity: 1, duration: 0.6, ease: 'power2.out' });
+
+        // ── 히어로 입장 ──
+        var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+        var catWords = splitWords(document.querySelector('.detail-category'));
+        tl.from(catWords, { opacity: 0, filter: 'blur(6px)', y: 8, duration: 0.8, stagger: 0.1 }, 0.3);
+
+        var chars = splitChars(document.querySelector('.detail-title'));
+        tl.from(chars, { opacity: 0, filter: 'blur(10px)', y: 20, duration: 1.4, stagger: 0.08 }, 0.6);
+
+        tl.from('.detail-tagline', { opacity: 0, filter: 'blur(4px)', y: 12, duration: 1 }, '-=0.5');
+        tl.from('.hero video', { opacity: 0, scale: 1.04, duration: 1.6 }, 0);
+
+
+        // ── 나가는 링크 전부: 오버레이 + sessionStorage ──
+        var backOverlay = document.createElement('div');
+        backOverlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;opacity:0;pointer-events:none;';
+        document.body.appendChild(backOverlay);
+
+        function navigateOut(href) {
+          var hash = href.split('#')[1];
+          if (hash) sessionStorage.setItem('returnTo', hash);
+          backOverlay.style.pointerEvents = 'all';
+          gsap.to(backOverlay, {
+            opacity: 1,
+            duration: 0.4,
+            ease: 'power2.inOut',
+            onComplete: function() { window.location.href = href.split('#')[0]; }
+          });
+        }
+
+        document.querySelectorAll('.back-btn, .detail-nav a').forEach(function(link) {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateOut(link.getAttribute('href'));
+          });
+        });
+      });
+    })();
+  </script>
+
+  <!-- Project Navigation Arrows -->
+  <a href="../index.html#work" class="proj-nav proj-nav--prev" aria-label="Previous">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+    <span>PREV</span>
+  </a>
+  <a href="sledding.html" class="proj-nav proj-nav--next" aria-label="Next">
+    <span>NEXT</span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M14 5l7 7-7 7"/></svg>
+  </a>
+
+  <style>
+    .proj-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.7);
+      padding: 20px 16px;
+      opacity: 1;
+      transition: transform 0.3s, color 0.4s;
+    }
+    .proj-nav--prev { left: 24px; }
+    .proj-nav--next { right: 24px; }
+    .proj-nav span {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      font-family: 'Jost', sans-serif;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    .proj-nav--prev span { transform: rotate(180deg); }
+    .proj-nav svg { opacity: 0.7; }
+    .proj-nav:hover { color: #fff; }
+    .proj-nav:hover svg { opacity: 1; }
+    .proj-nav--disabled { opacity: 0 !important; pointer-events: none; }
+    .proj-nav--prev:hover { transform: translateY(-50%) translateX(-3px); }
+    .proj-nav--next:hover { transform: translateY(-50%) translateX(3px); }
+    /* light background sections */
+    .proj-nav.on-light { color: rgba(42,33,24,0.6); }
+    .proj-nav.on-light:hover { color: #2a2118; }
+  </style>
+
+  <script>
+    (function() {
+      const prevNav = document.querySelector('.proj-nav--prev');
+      const nextNav = document.querySelector('.proj-nav--next');
+      const navEls = [prevNav, nextNav];
+
+      setTimeout(function() {
+        prevNav.classList.add('visible');
+        nextNav.classList.add('visible');
+      }, 800);
+
+      // Auto color: check which section occupies the viewport center
+      const LIGHT_SECTIONS = ['.po', '.mr', '.rd', '.mp', '.sh', '.ab', '.st', '.rf'];
+      const lightEls = Array.from(document.querySelectorAll(LIGHT_SECTIONS.join(',')));
+
+      function updateNavColor() {
+        const mid = window.innerHeight / 2;
+        const isLight = lightEls.some(function(el) {
+          const r = el.getBoundingClientRect();
+          return r.top <= mid && r.bottom >= mid;
+        });
+        navEls.forEach(function(el) {
+          if (el) el.classList.toggle('on-light', isLight);
+        });
+      }
+
+      window.addEventListener('scroll', updateNavColor, { passive: true });
+      window.addEventListener('resize', updateNavColor, { passive: true });
+      updateNavColor();
+
+
+      function slideOut(direction, url) {
+        document.body.style.transition = 'transform 0.55s cubic-bezier(0.76,0,0.24,1), opacity 0.55s ease';
+        document.body.style.transform = direction === 'next' ? 'translateX(-6%)' : 'translateX(6%)';
+        document.body.style.opacity = '0';
+        sessionStorage.setItem('slideFrom', direction === 'next' ? 'right' : 'left');
+        setTimeout(function() { window.location.href = url; }, 560);
+      }
+
+      prevNav.addEventListener('click', function(e) {
+        e.preventDefault();
+        slideOut('prev', '../index.html#work');
+      });
+      nextNav.addEventListener('click', function(e) {
+        e.preventDefault();
+        slideOut('next', 'sledding.html');
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') slideOut('prev', '../index.html#work');
+        if (e.key === 'ArrowRight') slideOut('next', 'sledding.html');
+      });
+
+      // Slide-in on page load
+      (function() {
+        const from = sessionStorage.getItem('slideFrom');
+        if (from) {
+          sessionStorage.removeItem('slideFrom');
+          document.body.style.transform = from === 'right' ? 'translateX(6%)' : 'translateX(-6%)';
+          document.body.style.opacity = '0';
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              document.body.style.transition = 'transform 0.55s cubic-bezier(0.76,0,0.24,1), opacity 0.55s ease';
+              document.body.style.transform = 'translateX(0)';
+              document.body.style.opacity = '1';
+              setTimeout(function() {
+                document.body.style.transform = '';
+                document.body.style.transition = '';
+                document.body.style.opacity = '';
+              }, 600);
+            });
+          });
+        }
+      })();
+    })();
+  </script>
+
+
+  <!-- Scroll to Top -->
+  <button id="scroll-top" aria-label="맨 위로" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <style>
+    #scroll-top {
+      position: fixed;
+      right: 28px;
+      bottom: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(20,16,12,0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.7);
+      cursor: none;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s, background 0.2s, border-color 0.2s;
+    }
+    #scroll-top.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    #scroll-top:hover {
+      background: rgba(42,33,24,0.85);
+      border-color: rgba(255,255,255,0.35);
+      color: #fff;
+    }
+  </style>
+
+  <script>
+    (function() {
+      const btn = document.getElementById('scroll-top');
+      window.addEventListener('scroll', function() {
+        btn.classList.toggle('visible', window.scrollY > 400);
+      }, { passive: true });
+    })();
+  </script>
+
+
+  <!-- ── Scroll reveal motion — Awwwards minimal-editorial signature (additive · non-destructive) ── -->
+  <script>
+    (function () {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      // 일관된 시그니처: 느린 expo easing + 절제된 상승 + 이미지 스케일 인 + 스태거.
+      // 텍스트는 히어로와 같은 톤(상승 + 블러 클리어)으로 통일 → 사이트 일관성.
+      var P = {
+        label: { opacity: 0, y: 20, duration: 0.9, ease: 'power3.out' },
+        title: { opacity: 0, y: 44, filter: 'blur(6px)', duration: 1.3, ease: 'expo.out' },
+        body:  { opacity: 0, y: 28, duration: 1.1, ease: 'power3.out' },
+        card:  { opacity: 0, y: 40, duration: 1.0, ease: 'power3.out' },
+        img:   { opacity: 0, scale: 1.08, duration: 1.5, ease: 'power2.out' },
+        fade:  { opacity: 0, duration: 1.1, ease: 'power1.out' }
+      };
+      var TKEYS = ['x', 'y', 'scale', 'rotation'];
+
+      var RULES = {
+        '.po': [['.po__label','label'],['.po__title','title'],['.po__lead','body'],['.po__values-label','label'],['.po__rule','fade'],['.po__card','card',1]],
+        '.pd': [['.pd__label','label'],['.pd__title','title'],['.pd__quote','body'],['.pd__dots','fade'],['.pd__card','card',1],['.pd__insight','body']],
+        '.mr': [['.mr__label','label'],['.mr__title','title'],['.mr__brand','card',1],['.mr__opp-label','label'],['.mr__opp-title','title'],['.mr__opp-arrow','fade'],['.mr__opp-desc','body'],['.mr__opp-closing','body']],
+        '.bn': [['.bn__label','label'],['.bn__name','title'],['.bn__circle','fade',1],['.bn__plus','fade'],['.bn__tagline-en','body'],['.bn__tagline-ko','body']],
+        '.ds': [['.ds__top-label','label'],['.ds__font-item','card',1],['.ds__color-row','card',1]],
+        '.rd': [['.rd__label','label'],['.rd__title','title'],['.rd__desc','body'],['.rd__rule','fade'],['.rd__tag','card',1],['.rd__mockup-pc','img'],['.rd__mockup-laptop','img'],['.rd__mockup-mobile','img']],
+        '.mp': [['.mp__title','title'],['.mp__desc','body'],['.mp__screen','img'],['.mp__annotation','fade',1]],
+        '.ab': [['.ab__title','title'],['.ab__desc','body'],['.ab__screen','img'],['.ab__collection-note, .ab__parallax-note, .ab__slogan-note, .ab__pv','fade',1]],
+        '.sh': [['.sh__title','title'],['.sh__desc','body'],['.sh__hero','img'],['.sh__cart-shot','img'],['.sh__card','card',1],['.sh__annotation','fade',1]],
+        '.st': [['.st__title','title'],['.st__desc','body'],['.st__phone','img'],['.st__shot','img'],['.st__annotation','fade',1]],
+        '.cl': [['.cl__en','title'],['.cl__ko','body'],['.cl__mark','fade']],
+        '.rf': [['.rf__label','label'],['.rf__title','title'],['.rf__card','card',1],['.rf__cta','body']]
+      };
+
+      // transform으로 위치 잡힌 요소 보호 → transform 계열 제거(opacity만)
+      function safe(el, preset) {
+        var c = {}, t = getComputedStyle(el).transform !== 'none';
+        for (var k in preset) { if (t && TKEYS.indexOf(k) >= 0) continue; c[k] = preset[k]; }
+        return c;
+      }
+
+      function build() {
+        Object.keys(RULES).forEach(function (secSel) {
+          var sec = document.querySelector(secSel);
+          if (!sec) return;
+          RULES[secSel].forEach(function (rule) {
+            var els = sec.querySelectorAll(rule[0]);
+            if (!els.length) return;
+            if (rule[2]) {
+              var arr = Array.prototype.slice.call(els);
+              var v = safe(arr[0], P[rule[1]]);
+              v.stagger = 0.13;
+              v.scrollTrigger = { trigger: arr[0], start: 'top 88%', once: true };
+              gsap.from(arr, v);
+            } else {
+              els.forEach(function (el) {
+                var v = safe(el, P[rule[1]]);
+                v.scrollTrigger = { trigger: el, start: 'top 86%', once: true };
+                gsap.from(el, v);
+              });
+            }
+          });
+        });
+        ScrollTrigger.refresh();
+      }
+
+      requestAnimationFrame(function () { requestAnimationFrame(build); });
+      window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+    })();
+  </script>
+
+  <!-- 페이지 나갈 때 페이드(크로스페이드 전환) — BACK·프로젝트 탭 클릭 시 -->
+  <script>
+  (function(){
+    var t; try { t = localStorage.getItem('theme'); } catch(e){}
+    var bg = (t === 'light') ? '#eceae6' : '#0a0a0b';
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;opacity:0;pointer-events:none;transition:opacity .42s ease;background:' + bg + ';';
+    document.body.appendChild(ov);
+    document.querySelectorAll('.pf-rail a[href]').forEach(function(a){
+      var href = a.getAttribute('href');
+      if (!href || href === '#' || a.getAttribute('target') === '_blank') return;
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        ov.style.pointerEvents = 'all';
+        requestAnimationFrame(function(){ ov.style.opacity = '1'; });
+        setTimeout(function(){ window.location.href = href; }, 400);
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
