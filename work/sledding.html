@@ -345,15 +345,15 @@
   <!-- HEADER -->
   <!-- 고정 프로젝트 레일 (모든 케이스 공통 · 자체 스타일) -->
   <style>
-    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(13,45,74,0.86);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(255,255,255,0.16);font-family:'Pretendard',system-ui,sans-serif;}
+    .pf-rail{position:fixed;inset:0 0 auto 0;height:60px;z-index:1000;display:flex;align-items:center;gap:14px;padding:0 clamp(20px,5vw,48px);background:rgba(30,130,180,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 20px rgba(0,80,130,0.2);font-family:'Pretendard',system-ui,sans-serif;}
     .pf-rail a,.pf-rail span{color:#fff;text-decoration:none;}
     .pf-rail__home{font-weight:800;letter-spacing:.1em;font-size:15px;display:inline-flex;gap:7px;align-items:center;flex-shrink:0;transition:gap .25s;}
     .pf-rail__home:hover{gap:11px;}
     .pf-rail__tabs{display:flex;gap:4px;margin:0 auto;overflow-x:auto;scrollbar-width:none;}
     .pf-rail__tabs::-webkit-scrollbar{display:none;}
-    .pf-rail__tab{white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;padding:7px 13px;border-radius:999px;opacity:.55;transition:opacity .25s,background .25s;}
+    .pf-rail__tab{white-space:nowrap;font-size:13px;font-weight:700;letter-spacing:.04em;padding:7px 13px;border-radius:999px;opacity:.55;transition:opacity .25s,background .25s;color:#fff;}
     .pf-rail__tab:hover{opacity:1;}
-    .pf-rail__tab--active{opacity:1;background:rgba(255,255,255,.16);}
+    .pf-rail__tab--active{opacity:1;background:rgba(255,255,255,.18);}
     .pf-rail__tab--soon{opacity:.3;pointer-events:none;}
     .pf-rail__live{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.04em;padding:9px 16px;border-radius:999px;background:#4fb8ea;color:#0d2d4a!important;transition:transform .2s,background .2s;}
     .pf-rail__live:hover{background:#6cc6f0;}
@@ -369,7 +369,7 @@
     </a>
     <div class="pf-rail__tabs">
       <a class="pf-rail__tab" href="ode.html">ODE</a>
-      <span class="pf-rail__tab pf-rail__tab--soon">상상의문</span>
+      <a class="pf-rail__tab" href="sangsang.html">상상의문</a>
       <a class="pf-rail__tab pf-rail__tab--active" href="sledding.html">Sledding</a>
       <a class="pf-rail__tab" href="notalk.html">노톡</a>
     </div>
