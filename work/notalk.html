@@ -316,28 +316,21 @@
     /* ── PROBLEM DEFINITION ── */
     .pd {
       position: relative;
-    }
-    .pd::before {
-      content: '';
-      position: absolute;
-      width: 480px; height: 480px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(125,109,255,0.13) 0%, transparent 70%);
-      top: -80px; left: -120px;
-      pointer-events: none;
-    }
-    .pd::after {
-      content: '';
-      position: absolute;
-      width: 420px; height: 420px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(131,216,191,0.15) 0%, transparent 70%);
-      bottom: 40px; right: -100px;
-      pointer-events: none;
-    }
-    .pd {
+      overflow: hidden;
       background: #ffffff;
       padding: 100px var(--pad) 110px;
+    }
+    .pd__ellipse {
+      background: rgba(232, 232, 253, 0.2);
+      border-radius: 50%;
+      width: 2745px;
+      height: 2119px;
+      position: absolute;
+      left: -409px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 0;
     }
     .pd__header { max-width: 760px; margin: 0 auto 56px; text-align: center; }   /* 가운데 정렬 */
     .pd__cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -509,7 +502,7 @@
     /* ── IA ── */
     .ia {
       background: var(--purple-light);
-      padding: 100px var(--pad) 120px;
+      padding: 100px var(--pad) 60px;
       position: relative;
     }
     .ia::before, .ia::after {
@@ -629,6 +622,382 @@
     }
     .ia__sub-detail li { list-style: none; }
     .ia__sub-detail li::before { content: '· '; color: var(--purple); }
+
+    /* ── SPLASH LOGIN SHOWCASE ── */
+    .sl {
+      display: block;
+      line-height: 0;
+      overflow: hidden;
+    }
+    .sl__img {
+      width: 100vw;
+      height: auto;
+      display: block;
+    }
+
+    /* ── HOME SCREEN ── */
+    .hm {
+      background: #fff;
+      padding: 100px var(--pad) 120px;
+      text-align: center;
+    }
+    .hm__label {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--purple);
+      margin-bottom: 60px;
+    }
+    .hm__layout {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hm__phone {
+      display: block;
+      height: 620px;
+      width: auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hm__col--left,
+    .hm__col--right {
+      position: absolute;
+      top: 0;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+    .hm__col--left  { right: calc(50% + 160px); align-items: flex-end; }
+    .hm__col--right { left: calc(50% + 160px);  align-items: flex-start; margin-right: 15px; }
+    .hm__callout {
+      display: flex;
+      align-items: center;
+    }
+    .hm__callout--right { flex-direction: row-reverse; }
+    .hm__callout-text { text-align: left; }
+    /* 02 카테고리 — 카테고리 그리드 중심 46% ≈ 285px */
+    .hm__col--left .hm__callout { margin-top: 285px; }
+    /* 01 히어로 — 히어로 배너 중심 17% ≈ 105px */
+    .hm__col--right .hm__callout:nth-child(1) { margin-top: 105px; }
+    /* 03 오늘 예정 모임 — 섹션 시작 62% ≈ 385px */
+    .hm__col--right .hm__callout:nth-child(2) { margin-top: 280px; }
+    .hm__callout-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+    }
+    .hm__callout-title .hm__num {
+      color: var(--purple);
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    .hm__callout-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+      padding-left: calc(1.2em + 15px); /* 숫자 너비 + margin-right 맞춤 */
+    }
+    .hm__line {
+      flex-shrink: 0;
+      width: 80px;
+      height: 1px;
+      background: #aaa;
+      position: relative;
+      margin: 0 16px;
+    }
+    .hm__line::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+    }
+    .hm__col--left .hm__line::after  { right: 0; }
+    .hm__col--right .hm__line::after { left: 0; }
+
+    /* ── EXPLORE ── */
+    .ex {
+      background: #fff;
+      padding: 100px var(--pad) 120px;
+      text-align: center;
+    }
+    .ex__layout {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 120px;
+      max-width: 1500px;
+      margin: 40px auto 0;
+    }
+    /* 센터 폰: 가장 크게 */
+    .ex__phone--main {
+      display: block;
+      height: clamp(480px, 44vw, 620px);
+      width: auto;
+    }
+    /* 사이드 폰: 센터보다 작게, 하단 정렬 */
+    .ex__phone--sub {
+      display: block;
+      height: clamp(380px, 36vw, 500px);
+      width: auto;
+    }
+    .ex__phone--right {
+      margin-bottom: 60px;
+    }
+    .ex__left-group,
+    .ex__right-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 24px;
+    }
+    .ex__left-group .ex__aside,
+    .ex__right-group .ex__aside {
+      margin-bottom: 0;
+      align-self: center;
+    }
+    .ex__center {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+    }
+    /* 화살표: 필터 아이콘 위치 (상단 15%) */
+    .ex__connector {
+      position: absolute;
+      top: 15%;
+      display: flex;
+      align-items: center;
+    }
+    .ex__connector--right {
+      right: -80px;
+      top: 15%; /* 필터 아이콘 위치 */
+    }
+    .ex__connector--left {
+      left: -80px;
+      top: 37%; /* 첫 번째 모임 카드 위치 */
+    }
+    .ex__conn-line {
+      width: 80px;
+      height: 1px;
+      background: #aaa;
+    }
+    .ex__conn-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      flex-shrink: 0;
+    }
+    /* 사이드 텍스트: 서브 폰 중간 높이에 위치 */
+    .ex__aside {
+      width: 210px;
+      flex-shrink: 0;
+      align-self: flex-end;
+      margin-bottom: 200px; /* sub폰 500px 중간 ~250px, 텍스트 높이 보정 */
+    }
+    .ex__aside--left { text-align: right; }
+    .ex__aside--left .hm__callout-title { justify-content: flex-end; }
+    .ex__aside--right { text-align: left; }
+    .ex__aside .hm__callout-title {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .ex__aside .hm__callout-desc {
+      padding-left: 0;
+      line-height: 1.7;
+    }
+    .ex__aside--left .hm__callout-desc { padding-left: 0; }
+
+    /* ── CREATE ── */
+    .cr {
+      background: #fff;
+      padding: 100px var(--pad) 120px;
+      text-align: center;
+    }
+    .cr__label {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--purple);
+      margin-bottom: 60px;
+    }
+    .cr__phones {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: clamp(16px, 2vw, 40px);
+      margin-bottom: 48px;
+    }
+    .cr__phone {
+      height: clamp(320px, 30vw, 480px);
+      width: auto;
+      display: block;
+    }
+    .cr__steps {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .cr__step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding-top: 20px;
+    }
+    /* 점 연결 점선 */
+    .cr__step::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      border-top: 2px dashed var(--purple);
+      z-index: 0;
+    }
+    .cr__step:first-child::before { left: 50%; }
+    .cr__step:last-child::before  { right: 50%; }
+    .cr__dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--purple);
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+      margin-bottom: 20px;
+    }
+    .cr__step-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .cr__step-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    /* ── MYPAGE ── */
+    .mp {
+      background: #fff;
+      padding: 100px var(--pad) 120px;
+    }
+    .mp__label {
+      display: block;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--purple);
+      margin-bottom: 60px;
+    }
+    .mp__layout {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    .mp__phone-main {
+      height: clamp(480px, 44vw, 620px);
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .mp__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px 48px;
+      flex: 1;
+    }
+    .mp__card { display: flex; flex-direction: column; text-align: center; }
+    .mp__card-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .mp__num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--purple);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .mp__card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+    .mp__card-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .mp__card-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+    }
+
+    /* ── ONBOARDING ── */
+    .ob {
+      background: #ffffff;
+      padding: 100px var(--pad) 140px;
+      text-align: center;
+    }
+    .ob__header { margin-bottom: 60px; }
+    .ob__label {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--purple);
+      margin-bottom: 12px;
+    }
+    .ob__sub {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .ob__phones {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 120px;
+    }
+    .ob__phone {
+      height: clamp(380px, 36vw, 560px);
+      width: auto;
+      display: block;
+    }
 
     /* ── APP SCREENS ── */
     .as {
@@ -776,6 +1145,7 @@
 
   <!-- ────────── PROBLEM DEFINITION ────────── -->
   <section class="pd">
+    <div class="pd__ellipse"></div>
     <div class="pd__header">
       <p class="mr__label">PROBLEM &amp; PROJECT GOALS</p>
     </div>
@@ -1060,8 +1430,180 @@
     </div>
   </section>
 
-  <!-- ────────── APP SCREENS ────────── -->
-  <section class="as">
+  <!-- ────────── SPLASH & LOGIN SHOWCASE ────────── -->
+  <section class="sl">
+    <img class="sl__img" src="../assets/images/notalk/splash login.png" alt="스플래시 & 로그인">
+  </section>
+
+  <!-- ────────── ONBOARDING ────────── -->
+  <section class="ob">
+    <div class="ob__header">
+      <span class="ob__label">ONBOARDING</span>
+    </div>
+    <div class="ob__phones">
+      <img class="ob__phone" src="../assets/images/notalk/온보딩1.png" alt="온보딩 1">
+      <img class="ob__phone" src="../assets/images/notalk/온보딩2.png" alt="온보딩 2">
+      <img class="ob__phone" src="../assets/images/notalk/온보딩3.png" alt="온보딩 3">
+    </div>
+  </section>
+
+  <!-- ────────── HOME SCREEN ────────── -->
+  <section class="hm">
+    <span class="hm__label">HOME</span>
+    <div class="hm__layout">
+      <div class="hm__col hm__col--left">
+        <div class="hm__callout hm__callout--right">
+          <div class="hm__line"></div>
+          <div class="hm__callout-text">
+            <p class="hm__callout-title"><span class="hm__num">02</span>빠른 카테고리 탐색</p>
+            <p class="hm__callout-desc">빠른 바로가기 카테고리를 통해<br>원하는 활동의 모임을 탐색해요.</p>
+          </div>
+        </div>
+      </div>
+      <div class="hm__col hm__col--center">
+        <img class="hm__phone" src="../assets/images/notalk/home screen.png" alt="홈 화면">
+      </div>
+      <div class="hm__col hm__col--right">
+        <div class="hm__callout hm__callout--left">
+          <div class="hm__line"></div>
+          <div class="hm__callout-text">
+            <p class="hm__callout-title"><span class="hm__num">01</span>히어로 영역</p>
+            <p class="hm__callout-desc">간략한 서비스 설명 및CTA</p>
+          </div>
+        </div>
+        <div class="hm__callout hm__callout--left">
+          <div class="hm__line"></div>
+          <div class="hm__callout-text">
+            <p class="hm__callout-title"><span class="hm__num">03</span>오늘 예정 모임</p>
+            <p class="hm__callout-desc">오늘 참여 예정인 모임 일정을<br>확인하고 참여할 수 있어요.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────── EXPLORE SCREEN ────────── -->
+  <section class="ex">
+    <span class="hm__label">EXPLORE</span>
+    <div class="ex__layout">
+      <!-- 좌측 그룹: 텍스트 + 폰 -->
+      <div class="ex__left-group">
+        <div class="ex__aside ex__aside--left">
+          <p class="hm__callout-title"><span class="hm__num">02</span>모임 상세</p>
+          <p class="hm__callout-desc">모임 상세를 확인하고 모임을<br>참여 할 수 있어요.</p>
+        </div>
+        <img class="ex__phone ex__phone--sub" src="../assets/images/notalk/모임 상세 화면.png" alt="모임 상세">
+      </div>
+      <!-- 중앙 메인 폰 -->
+      <div class="ex__center">
+        <img class="ex__phone ex__phone--main" src="../assets/images/notalk/explore screen.png" alt="탐색 화면">
+        <!-- 좌측 화살표 (모임 상세 방향) -->
+        <div class="ex__connector ex__connector--left">
+          <span class="ex__conn-dot"></span>
+          <div class="ex__conn-line"></div>
+        </div>
+        <!-- 우측 화살표 (필터 방향) -->
+        <div class="ex__connector ex__connector--right">
+          <div class="ex__conn-line"></div>
+          <span class="ex__conn-dot"></span>
+        </div>
+      </div>
+      <!-- 우측 그룹: 폰 + 텍스트 -->
+      <div class="ex__right-group">
+        <img class="ex__phone ex__phone--sub ex__phone--right" src="../assets/images/notalk/필터 기능 화면.png" alt="필터 기능">
+        <div class="ex__aside ex__aside--right">
+          <p class="hm__callout-title"><span class="hm__num">01</span>필터 기능</p>
+          <p class="hm__callout-desc">사용자가 희망하는 조건으로<br>모임을 탐색할 수 있어요.</p>
+        </div>
+      </div>
+    </div><!-- /.ex__layout -->
+  </section>
+
+  <!-- ────────── CREATE ────────── -->
+  <section class="cr">
+    <span class="cr__label">CREATE</span>
+    <div class="cr__phones">
+      <img class="cr__phone" src="../assets/images/notalk/create1.png" alt="모임 만들기 1">
+      <img class="cr__phone" src="../assets/images/notalk/create2.png" alt="모임 만들기 2">
+      <img class="cr__phone" src="../assets/images/notalk/create3.png" alt="모임 만들기 3">
+      <img class="cr__phone" src="../assets/images/notalk/create4.png" alt="모임 만들기 4">
+      <img class="cr__phone" src="../assets/images/notalk/create5.png" alt="모임 만들기 5">
+    </div>
+    <div class="cr__steps">
+      <div class="cr__step">
+        <div class="cr__dot"></div>
+        <h4 class="cr__step-title">모임 옵션 설정</h4>
+        <p class="cr__step-desc">모임의 목적과 분위기, 참여 인원,<br>선호 성별과 나이 등을 설정해요.</p>
+      </div>
+      <div class="cr__step">
+        <div class="cr__dot"></div>
+        <h4 class="cr__step-title">주제 선택</h4>
+        <p class="cr__step-desc">함께할 활동 주제를 선택해요.</p>
+      </div>
+      <div class="cr__step">
+        <div class="cr__dot"></div>
+        <h4 class="cr__step-title">날짜·시간·장소 설정</h4>
+        <p class="cr__step-desc">모임이 열릴 날짜와 시간,<br>만날 장소를 설정해요.</p>
+      </div>
+      <div class="cr__step">
+        <div class="cr__dot"></div>
+        <h4 class="cr__step-title">모임 소개 작성</h4>
+        <p class="cr__step-desc">모임 제목과 간단한 소개를 작성해<br>참여자가 모임을 이해할 수 있게 해요.</p>
+      </div>
+      <div class="cr__step">
+        <div class="cr__dot"></div>
+        <h4 class="cr__step-title">모임 생성 완료</h4>
+        <p class="cr__step-desc">설정한 내용을 확인하고<br>모임을 생성해요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────── MYPAGE ────────── -->
+  <section class="mp">
+    <span class="mp__label">MYPAGE</span>
+    <div class="mp__layout">
+      <!-- 좌측 큰 폰 -->
+      <img class="mp__phone-main" src="../assets/images/notalk/mypage.png" alt="마이페이지">
+      <!-- 우측 2×2 그리드 -->
+      <div class="mp__grid">
+        <div class="mp__card">
+          <div class="mp__card-header">
+            <span class="mp__num">01</span>
+            <h4 class="mp__card-title">프로필 정보</h4>
+          </div>
+          <p class="mp__card-desc">프로필 이미지, 닉네임, MBTI 등<br>사용자 기본 정보를 확인 할 수 있어요.</p>
+          <img class="mp__card-img" src="../assets/images/notalk/mypage1.png" alt="프로필 정보">
+        </div>
+        <div class="mp__card">
+          <div class="mp__card-header">
+            <span class="mp__num">02</span>
+            <h4 class="mp__card-title">모임 및 활동 통계</h4>
+          </div>
+          <p class="mp__card-desc">참여한 모임, 개설한 모임, 누적 활동 시간을<br>한눈에 확인 할 수 있어요.</p>
+          <img class="mp__card-img" src="../assets/images/notalk/mypage2.png" alt="모임 및 활동 통계">
+        </div>
+        <div class="mp__card mp__card--abs mp__card--badge">
+          <div class="mp__card-header">
+            <span class="mp__num">03</span>
+            <h4 class="mp__card-title">나의 배지</h4>
+          </div>
+          <p class="mp__card-desc">활동을 통해 획득한 배지를 확인할 수 있으며,<br>다양한 배지를 모아 볼수 있어요.</p>
+          <img class="mp__card-img" src="../assets/images/notalk/mypage3.png" alt="나의 배지">
+        </div>
+        <div class="mp__card mp__card--abs mp__card--setting">
+          <div class="mp__card-header">
+            <span class="mp__num">04</span>
+            <h4 class="mp__card-title">설정 및 관리 기능</h4>
+          </div>
+          <p class="mp__card-desc">모임관리, 계정 정보, 알림 설정, 신고/차단,<br>문의하기 등 다양한 계정 관련 기능을 이용할 수 있어요.</p>
+          <img class="mp__card-img" src="../assets/images/notalk/mypage4.png" alt="설정 및 관리">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP SCREENS 제거됨 -->
+  <section class="as" style="display:none">
     <div class="as__header">
       <span class="sec-label">APP SCREENS</span>
       <h2 class="sec-title">주요 화면</h2>
